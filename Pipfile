@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.doubanio.com/simple/"
+verify_ssl = true
+
+[dev-packages]
+flower = "*"
+v = {editable = true,version = "*"}
+black = "*"
+pre-commit = "*"
+
+[packages]
+pyicloud = "*"
+paramiko = "*"
+redis = "*"
+hiredis = "*"
+slackclient = "*"
+celery = "*"
+flask = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
