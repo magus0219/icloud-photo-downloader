@@ -1,0 +1,55 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="/task">Task</a>
+            <a class="nav-item nav-link" href="/user">User</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">Task Status</h1>
+    <p class="lead">
+        {% set ns = namespace(progress=0) %}
+        {% for one_task in tasks %}
+        {% if one_task.task_name == task_name %}
+        {% set ns.progress = one_task.cnt_done/one_task.cnt_total if one_task.cnt_total != 0 else 0 %}
+        {{ progress }}
+        {{ one_task.cnt_done }} / {{ one_task.cnt_total }}
+        {% endif %}
+        {% endfor %}
+    </p>
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ ns.progress }}%" aria-valuenow="{{ ns.progress }}" aria-valuemin="0" aria-valuemax="100">{{ ns.progress }}%</div>
+    </div>
+</div>
+<div>
+    <table class="table">
+        <tr>
+            <th>No.</th>
+            <th>File Id</th>
+            <th>File Name</th>
+            <th>File Size (Bytes)</th>
+            <th>File Create Time</th>
+            <th>File Status</th>
+        </tr>
+        {% for one_file in files %}
+        {% set statusclass = "table-success" if one_file.status==100 else "table-warning" if one_file.status>0 else "" %}
+        <tr class="{{ statusclass }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ one_file.file_id }}</td>
+            <td>{{ one_file.filename }}</td>
+            <td>{{ one_file.size }}</td>
+            <td>{{ one_file.created_ts|unixtime_to_str }}</td>
+            <td>{{ one_file.status }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

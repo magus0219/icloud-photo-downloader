@@ -8,6 +8,8 @@ flower = "*"
 v = {editable = true,version = "*"}
 black = "*"
 pre-commit = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [packages]
 pyicloud = "*"
@@ -17,6 +19,7 @@ hiredis = "*"
 slackclient = "*"
 celery = "*"
 flask = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

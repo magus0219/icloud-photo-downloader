@@ -37,6 +37,10 @@ class DateTimeUtil:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     @classmethod
+    def get_datetime_from_date_str(cls, date_str):
+        return datetime.datetime.strptime(date_str, "%Y%m%d")
+
+    @classmethod
     def get_str_from_datetime(cls, datetime_obj):
         return datetime.datetime.strftime(datetime_obj, "%Y-%m-%d %H:%M:%S")
 
@@ -47,3 +51,7 @@ class DateTimeUtil:
     @classmethod
     def get_datetime_from_timestamp(cls, timestamp):
         return datetime.datetime.fromtimestamp(timestamp)
+
+    @classmethod
+    def get_datetime_from_date(cls, date):
+        return datetime.datetime.fromordinal(date.toordinal())

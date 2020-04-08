@@ -2,32 +2,55 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/3/25
-import json
+import sys
+import json as jsonlib
 import datetime
 from future.moves.urllib.parse import urlencode
 from pyicloud.services.photos import (
     PhotoAsset,
     PhotoAlbum,
 )
+from artascope.src.util.latch import Latch
 from artascope.src.util import get_logger
 from artascope.src.util.date_util import DateUtil
+from artascope.src.config import API_LATCH_LIMIT_PER_MINUTE
 
 
 logger = get_logger("server.patch")
 
 
-def photo_asset_get_state(self):
+def photo_asset_get_state(self) -> None:
+    """Remove stateful attribute _service
+
+    :param self:
+    :return:
+    """
     state = self.__dict__.copy()
     if "_service" in state:
         del state["_service"]
     return state
 
 
-def patch_photo_asset():
+def patch_photo_asset() -> None:
+    """Patch PhotoAsset class to adapt pickle module
+
+    :return:
+    """
     setattr(PhotoAsset, "__getstate__", photo_asset_get_state)
 
 
-def __list_query_gen_simple(self, offset, list_type, direction, query_filter=None):
+def __list_query_gen_simple(
+    self, offset: int, list_type: str, direction: str, query_filter=None
+) -> dict:
+    """A method to get simple info of photos to support date filter function
+
+    :param self:
+    :param offset:
+    :param list_type:
+    :param direction:
+    :param query_filter:
+    :return:
+    """
     query = {
         u"query": {
             u"filterBy": [
@@ -61,7 +84,12 @@ def __list_query_gen_simple(self, offset, list_type, direction, query_filter=Non
     return query
 
 
-def __get_date_info(self):
+def __get_photos_by_date(self):
+    """Prefetch all photo data to filter date
+
+    :param self:
+    :return:
+    """
     if self.direction == "DESCENDING":
         offset = len(self) - 1
     else:
@@ -73,7 +101,7 @@ def __get_date_info(self):
         )
         request = self.service.session.post(
             url,
-            data=json.dumps(
+            data=jsonlib.dumps(
                 self.__list_query_gen_simple(
                     offset, self.list_type, self.direction, self.query_filter
                 )
@@ -107,14 +135,23 @@ def __get_date_info(self):
             break
 
 
-def __get_offset_and_cnt(
+def __get_offset_and_cnt_by_desc(
     self, album_len, date_start: datetime.date, date_end: datetime.date
-):
+) -> (int, int):
+    """Get idx and cnt of date query
+    Use DESCENDING as api direction so index of the first item is len-1
+
+    :param self:
+    :param album_len: len of album
+    :param date_start: start date of query
+    :param date_end: end date of query(include)
+    :return: (offset, cnt)
+    """
     idx_first = None
     idx_last = None
 
     idx = 0
-    for photo in self.__get_date_info():
+    for photo in self.__get_photos_by_date():
         asset_date = DateUtil.get_date_from_timestamp(
             photo._asset_record["fields"]["assetDate"]["value"] // 1000
         )
@@ -140,7 +177,7 @@ def __get_offset_and_cnt(
     elif idx_last is None:
         idx_last = album_len - 1
 
-    logger.info(
+    logger.debug(
         "album_len:{}, idx_first:{}, idx_last:{}".format(album_len, idx_first, idx_last)
     )
     return album_len - 1 - idx_first, idx_last - idx_first + 1
@@ -161,7 +198,7 @@ def fetch_photos(
         if not date_end:
             date_end = DateUtil.get_tomorrow()
 
-        offset, cnt = self.__get_offset_and_cnt(album_len, date_start, date_end)
+        offset, cnt = self.__get_offset_and_cnt_by_desc(album_len, date_start, date_end)
 
     elif last:
         if last > album_len:
@@ -180,9 +217,9 @@ def fetch_photos(
         )
         request = self.service.session.post(
             url,
-            data=json.dumps(
+            data=jsonlib.dumps(
                 self._list_query_gen(
-                    offset, self.list_type, self.direction, self.query_filter
+                    offset, self.list_type, "DESCENDING", self.query_filter
                 )
             ),
             headers={"Content-type": "text/plain"},
@@ -200,10 +237,7 @@ def fetch_photos(
 
         master_records_len = len(master_records)
         if master_records_len:
-            if self.direction == "DESCENDING":
-                offset = offset - master_records_len
-            else:
-                offset = offset + master_records_len
+            offset = offset - master_records_len
 
             for master_record in master_records:
                 record_name = master_record["recordName"]
@@ -221,5 +255,29 @@ def fetch_photos(
 def patch_photo_album():
     setattr(PhotoAlbum, "fetch_photos", fetch_photos)
     setattr(PhotoAlbum, "__list_query_gen_simple", __list_query_gen_simple)
-    setattr(PhotoAlbum, "__get_date_info", __get_date_info)
-    setattr(PhotoAlbum, "__get_offset_and_cnt", __get_offset_and_cnt)
+    setattr(PhotoAlbum, "__get_photos_by_date", __get_photos_by_date)
+    setattr(PhotoAlbum, "__get_offset_and_cnt_by_desc", __get_offset_and_cnt_by_desc)
+
+
+latch = Latch("api", API_LATCH_LIMIT_PER_MINUTE)
+
+
+def get(self, url, data=None, json=None, **kwargs):
+    latch.lock()
+    return self.request("GET", url, data=data, json=json, **kwargs)
+
+
+def post(self, url, data=None, json=None, **kwargs):
+    latch.lock()
+
+    if url == "https://setup.icloud.com/setup/ws/1/login":
+        data = jsonlib.loads(data)
+        data.update({"extended_login": True})
+        data = jsonlib.dumps(data)
+        logger.debug("modify json data:{}".format(data))
+    return self.request("POST", url, data=data, json=json, **kwargs)
+
+
+def patch_session():
+    setattr(getattr(sys.modules["pyicloud.base"], "PyiCloudSession"), "post", post)
+    setattr(getattr(sys.modules["pyicloud.base"], "PyiCloudSession"), "get", get)

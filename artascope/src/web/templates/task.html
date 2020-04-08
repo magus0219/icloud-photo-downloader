@@ -1,0 +1,57 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="/task">Task</a>
+            <a class="nav-item nav-link" href="/user">User</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">Task List</h1>
+    {% if username %}
+    <p class="lead">of {{ username }}</p>
+    {% else %}
+    <p class="lead">Show your history tasks in the following list</p>
+    {% endif %}
+</div>
+<div>
+    <table class="table">
+        <tr>
+            <th>#</th>
+            <th>Task Name</th>
+            <th>Run Type</th>
+            <th>Params</th>
+            <th>Start Time</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Done/Total</th>
+        </tr>
+        {% for one_task in tasks %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><a href="/task/status/{{ one_task.task_name }}">{{ one_task.task_name }}</a></td>
+            {% set type_str = task_run_type_text[one_task.run_type]  %}
+            <td>{{ type_str }}</td>
+            {% if type_str == "All" %}
+            <td></td>
+            {% elif type_str == "Last" %}
+            <td>{{ one_task.last }}</td>
+            {% elif type_str == "Date Range" %}
+            <td>{{ one_task.date_start|unixtime_to_str }} - {{ one_task.date_end|unixtime_to_str }}</td>
+            {% endif %}
+            <td>{{ one_task.created_dt|unixtime_to_str }}</td>
+            <td><a href="/user/">{{ one_task.username }}</a></td>
+            <td>{{ task_status_text[one_task.status] }}</td>
+            <td>{{ one_task.cnt_done }} / {{ one_task.cnt_total }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

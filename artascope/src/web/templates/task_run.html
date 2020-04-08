@@ -1,0 +1,96 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="/task">Task</a>
+            <a class="nav-item nav-link" href="/user">User</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">Run task</h1>
+    <p class="lead">Run task immediately or periodically</p>
+</div>
+<div>
+    <form method="post">
+        <h2>iCloud Account:</h2>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputEmail">Username</label>
+                <input type="email" class="form-control" id="inputEmail" name="account_username"
+                       value="{{ user.username }}" readonly>
+            </div>
+        </div>
+        <hr class="my-4">
+
+        <h2>Run Type:</h2>
+        <div class="container">
+            <div class="row">
+                <div class="card col-md-3">
+                    <div class="card-body">
+                        <p>
+                        <div class="card-title form-check">
+                            <input class="form-check-input" type="radio" name="run_type" id="type_all" value=1 checked>
+                            <label class="form-check-label" for="type_all">
+                                All
+                            </label>
+                        </div>
+
+                        </p>
+                    </div>
+                </div>
+                <div class="card col-md-3">
+                    <div class="card-body">
+                        <p>
+                        <div class="card-title form-check">
+                            <input class="form-check-input" type="radio" name="run_type" id="type_last"
+                                   value=2>
+                            <label class="form-check-label" for="type_last">
+                                Last
+                            </label>
+                        </div>
+
+                        </p>
+                        <div class="form-group">
+                            <label for="last_cnt">Last Cnt</label>
+                            <input type="text" class="form-control" id="last_cnt" name="last_cnt" placeholder="100">
+                        </div>
+                    </div>
+                </div>
+                <div class="card col-md-3">
+                    <div class="card-body">
+                        <p>
+                        <div class="card-title form-check">
+                            <input class="form-check-input" type="radio" name="run_type" id="type_date"
+                                   value=3>
+                            <label class="form-check-label" for="type_date">
+                                Date Range
+                            </label>
+                        </div>
+
+                        </p>
+                        <div class="form-group">
+                            <label for="date_start">Start Date</label>
+                            <input type="text" class="form-control" id="date_start" name="date_start"
+                                   placeholder="20190219">
+                        </div>
+                        <div class="form-group">
+                            <label for="date_end">End Date</label>
+                            <input type="text" class="form-control" id="date_end" name="date_end"
+                                   placeholder="20190220">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <hr class="my-4">
+            <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

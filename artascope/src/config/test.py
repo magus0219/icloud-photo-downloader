@@ -1,40 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Created by magus0219[magus0219@gmail.com] on 2020/3/22
-ENV = ""  # will be set auto as filepath in __init__
-DEBUG = True
-
-SLACK_TOKEN = (
-    "xoxp-788823341621-776039979922-783917865361-5c7a03623068530dd3307507b067b459"
-)
-REDIS_SLACK_MSG_EXPIRE = 3600
-
+# Created by magus0219[magus0219@gmail.com] on 2020/4/3
 REDIS_CONFIG = {
     "host": "localhost",
     "port": 6379,
+    "db": 1,
 }
 
-USER_PASSWORD_MAP = {"magus0219@gmail.com": "LiuNian871209"}
+API_LATCH_LIMIT_PER_MINUTE = 30
 
-TARGET = {
-    "hostname": "192.168.50.118",
-    "port": 2224,
-    "username": "magus0219",
-    "password": "boena0219",
-}
-TARGET_DIR = "Drive/Moments/Mobile/iphone"
+API_FILE_DOWNLOAD_CHUNK_SIZE = 4
 
-BATCH_CNT = 200
+SECONDS_WAIT_AFTER_SEND_CAPTCHA = 1
+SECONDS_WAIT_FOR_API_LIMIT = 1
 
-API_FILE_DOWNLOAD_CHUNK_SIZE = 8192
-API_LATCH_LIMIT_PER_MINUTE = 6
-API_PAGE_SIZE = 200
-
-SECONDS_WAIT_FOR_API_LIMIT = 600
-SECONDS_WAIT_AFTER_SEND_CAPTCHA = 60
-
-TIMEZONE = "Asia/Shanghai"
+BATCH_CNT = 2
 
 LOG_CONFIG = {
     "version": 1,
@@ -58,7 +39,7 @@ LOG_CONFIG = {
             # 'class': 'logging.handlers.TimedRotatingFileHandler',
             "class": "logging.FileHandler",
             "formatter": "verbose",
-            "filename": "server.log",
+            "filename": "dev.log",
             # 'when': 'D',
             # 'backupCount': 7,
             "encoding": "utf8",

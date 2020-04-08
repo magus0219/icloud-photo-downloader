@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Created by magus0219[magus0219@gmail.com] on 2020/4/4
+import datetime
+import uuid
+import pytz
+from pyicloud.exceptions import PyiCloudAPIResponseException
+from artascope.src.celery_app import app as celery_app
+from artascope.src.lib.auth_manager import AuthManager
+from artascope.src.util import get_logger
+from artascope.src.config import (
+    BATCH_CNT,
+    API_PAGE_SIZE,
+    TIMEZONE,
+    DEBUG,
+)
+from artascope.src.lib.task_manager import (
+    tm,
+    TaskRunType,
+)
+from artascope.src.task.downloader import download_photo
+from artascope.src.patch.pyicloud import (
+    patch_photo_album,
+    patch_photo_asset,
+)
+from artascope.src.exception import (
+    NeedLoginAgainException,
+    ApiLimitException,
+)
+from artascope.src.util.context_manager import api_exception_handler
+from artascope.src.util.date_util import DateTimeUtil
+
+logger = get_logger("server")
+
+tz_shanghai = pytz.timezone(TIMEZONE)
+
+
+def decide_run_type(
+    last=None, date_start: datetime.date = None, date_end: datetime.date = None
+):
+    if last is None and date_start is None and date_end is None:
+        return TaskRunType.ALL
+    elif last is not None:
+        return TaskRunType.LAST
+    elif date_start is not None:
+        return TaskRunType.DATE_RANGE
+
+
+def get_task_name(
+    username: str,
+    last: int = None,
+    date_start: datetime.date = None,
+    date_end: datetime.date = None,
+):
+    task_name = tm.get_current_task_name(username=username)
+    if not task_name:
+        task_name = uuid.uuid4().hex
+        tm.add_task(
+            task_name=task_name,
+            username=username,
+            run_type=decide_run_type(last, date_start, date_end),
+            last=last,
+            date_start=DateTimeUtil.get_datetime_from_date(date_start).timestamp()
+            if date_start
+            else None,
+            date_end=DateTimeUtil.get_datetime_from_date(date_end).timestamp()
+            if date_end
+            else None,
+        )
+    return task_name
+
+
+@celery_app.task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
+def sync(
+    self,
+    username: str,
+    password: str,
+    last: int = None,
+    date_start: datetime.date = None,
+    date_end: datetime.date = None,
+) -> str:
+    task_name = get_task_name(
+        username=username, last=last, date_start=date_start, date_end=date_end
+    )
+    tm.attach_celery_task_id(task_name, self.request.id)
+    am = AuthManager(username, password)
+    with api_exception_handler(am) as api:
+        if isinstance(api, Exception):
+            raise api
+
+        patch_photo_asset()
+        patch_photo_album()
+
+        try:
+            album_all = api.photos.all
+            album_all.direction = "DESCENDING"
+            album_all.page_size = API_PAGE_SIZE
+
+            album_len = len(album_all)
+            logger.info("album_len:{}".format(str(album_len)))
+
+            cnt = 0
+            photos = [
+                photo
+                for photo in album_all.fetch_photos(
+                    album_len, last, date_start, date_end
+                )
+            ]
+        except PyiCloudAPIResponseException as e:
+            if DEBUG:
+                logger.exception(e)
+            if "Invalid global session" in str(e):
+                raise NeedLoginAgainException()
+            elif "private db access disabled for this account" in str(e):
+                raise ApiLimitException()
+            else:
+                raise
+        except Exception as e:
+            raise
+
+        photos_len = len(photos)
+        tm.update_task_total(task_name, photos_len)
+        logger.info("get photos meta data done.")
+        batch = []
+        for photo in photos:
+            tm.add_file_status(task_name, photo)
+            logger.debug(
+                "{}:{}".format(photo.filename, photo.created.astimezone(tz_shanghai))
+            )
+            batch.append(photo)
+
+            if len(batch) == BATCH_CNT:
+                rlt = download_photo.delay(task_name, username, batch)
+                tm.attach_celery_task_id(task_name, rlt.id)
+                batch = []
+            cnt += 1
+
+        if len(batch):
+            rlt = download_photo.delay(task_name, username, batch)
+            tm.attach_celery_task_id(task_name, rlt.id)
+        logger.info("Need download {} photos".format(str(cnt)))
+
+        return task_name

@@ -15,6 +15,7 @@ class PrefixRedis(object):
         "get",
         "set",
         "setex",
+        "delete",
         "incr",
         "expire",
         "hset",
@@ -31,12 +32,13 @@ class PrefixRedis(object):
         "zrange",
         "zscore",
         "zrangebyscore",
+        "zrank",
         "lpush",
         "lrange",
     ]
 
     def __init__(self, prefix, **config):
-        super(self, PrefixRedis).__init__()
+        super(PrefixRedis, self).__init__()
         self._prefix = prefix + ":{}"
         self._r = redis.StrictRedis(**config)
 

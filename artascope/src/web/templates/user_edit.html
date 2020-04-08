@@ -1,0 +1,135 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/task">Task</a>
+            <a class="nav-item nav-link active" href="/user">User</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">Edit User Setting</h1>
+    {% if user_setting %}
+    <p class="lead">of {{ user_setting.icloud_username }}</p>
+    {% else %}
+    <p class="lead">Add one user to download photos</p>
+    {% endif %}
+</div>
+<div>
+    <form method="post">
+        <h2>iCloud Account:</h2>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputEmail">Username</label>
+                {% set icloud_username=user_setting.icloud_username if user_setting else "" %}
+                <input type="email" class="form-control" id="inputEmail" name="account_username" value="{{ icloud_username }}" placeholder="name@example.com">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputPassword">Password</label>
+                {% set icloud_password=user_setting.icloud_password if user_setting else "" %}
+                <input type="text" class="form-control" id="inputPassword" name="account_password" value="{{ icloud_password }}" placeholder="********">
+            </div>
+        </div>
+        <hr class="my-4">
+
+        <h2>Admin URL</h2>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="adminURLPrefix">URL Prefix</label>
+                {% set admin_url_prefix=user_setting.admin_url_prefix if user_setting else "" %}
+                <input type="text" class="form-control" id="adminURLPrefix" name="admin_url_prefix" value="{{ admin_url_prefix }}" placeholder="http://127.0.0.1:5000">
+            </div>
+        </div>
+        <hr class="my-4">
+
+        <h2>Target:</h2>
+        <div class="card col-md-6">
+            <div class="card-body">
+                <p>
+                <div class="card-title form-check">
+                    <input class="form-check-input" type="radio" name="target" id="targetSFTP" value=1 checked>
+                    <label class="form-check-label" for="targetSFTP">
+                        SFTP
+                    </label>
+                </div>
+
+                </p>
+                <div class="form-group">
+                    <label for="SFTPHost">Host</label>
+                    {% set sftp_host=user_setting.sftp_host if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPHost" name="sftp_host" value="{{ sftp_host }}" placeholder="192.168.1.1">
+                </div>
+                <div class="form-group">
+                    <label for="SFTPPort">Port</label>
+                    {% set sftp_port=user_setting.sftp_port if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPPort" name="sftp_port" value="{{ sftp_port }}" placeholder="22">
+                </div>
+                <div class="form-group">
+                    <label for="SFTPUsername">Username</label>
+                    {% set sftp_username=user_setting.sftp_username if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPUsername" name="sftp_username" value="{{ sftp_username }}" placeholder="somebody">
+                </div>
+                <div class="form-group">
+                    <label for="SFTPPassword">Password</label>
+                    {% set sftp_password=user_setting.sftp_password if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPPassword" name="sftp_password" value="{{ sftp_password }}" placeholder="********">
+                </div>
+                <div class="form-group">
+                    <label for="SFTPDir">Home Directory</label>
+                    {% set sftp_dir=user_setting.sftp_dir if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPDir" name="sftp_dir" value="{{ sftp_dir }}" placeholder="/home/dir">
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+
+        <h2>Notification:</h2>
+        <div class="card col-md-6">
+            <div class="card-body">
+                <p>
+                <div class="card-title form-check">
+                    {% set checked='checked' if not user_setting or user_setting.notify_type==0 else "" %}
+                    <input class="form-check-input" type="radio" name="notify_type" id="None" value=0 {{ checked }}>
+                    <label class="form-check-label" for="None">
+                        None
+                    </label>
+                </div>
+                </p>
+            </div>
+        </div>
+        <div class="card col-md-6">
+            <div class="card-body">
+                <p>
+                <div class="card-title form-check">
+                    {% set checked='checked' if user_setting.notify_type==1 else "" %}
+                    <input class="form-check-input" type="radio" name="notify_type" id="Slack" value=1 {{ checked }}>
+                    <label class="form-check-label" for="Slack">
+                        Slack
+                    </label>
+                </div>
+                </p>
+                <div class="form-group">
+                    <label for="slackToken">Slack Token</label>
+                    {% set slack_token=user_setting.slack_token if user_setting else "" %}
+                    <input type="text" class="form-control" id="slackToken" name="slack_token" value="{{ slack_token }}" placeholder="xxxx-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label for="slackChannel">Channel Name</label>
+                    {% set slack_channel=user_setting.slack_channel if user_setting else "" %}
+                    <input type="text" class="form-control" id="slackChannel" name="slack_channel" value="{{ slack_channel }}" placeholder="channel name">
+                </div>
+            </div>
+        </div>
+        <hr class="my-4">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/task">Task</a>
+            <a class="nav-item nav-link active" href="/user">User</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">User List</h1>
+    <p class="lead">Users in this system</p>
+</div>
+<div>
+    <p>
+    <a class="btn btn-primary" href="/user/edit">Add</a>
+    </p>
+    <table class="table">
+        <tr>
+            <th>#</th>
+            <th>User Name</th>
+            <th>Current Task</th>
+            <th>Created Time</th>
+            <th>Login Status</th>
+            <th>Operation</th>
+        </tr>
+        {% for one_user in users %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ one_user.username }}</td>
+            <td>{{ one_user.current_task }}</td>
+            <td>{{ one_user.created_ts|unixtime_to_str }}</td>
+            <td>{{ login_status_text[one_user.login_status] }}</td>
+            <td>
+                <a class="btn btn-primary btn-sm" href="/task/{{ one_user.username|urlencode }}">History</a>
+                <a class="btn btn-primary btn-sm" href="/task/run/{{ one_user.username|urlencode }}">Run</a>
+                <a class="btn btn-primary btn-sm" href="/user/edit/{{ one_user.username|urlencode }}">Edit</a>
+                <a class="btn btn-primary btn-sm" href="/user/captcha/{{ one_user.username|urlencode }}">Captcha</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

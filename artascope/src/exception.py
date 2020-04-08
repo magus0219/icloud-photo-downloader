@@ -5,6 +5,9 @@
 
 
 class ArtascopeException(Exception):
+    def __init__(self, msg=None):
+        self.msg = msg
+
     def __str__(self):
         return "[{classname}]{info}".format(
             classname=type(self).__name__,  # 通过这种方法拿到子类名
@@ -14,7 +17,41 @@ class ArtascopeException(Exception):
         )
 
 
-#   SlackSender  #
+class InvalidLoginStatus(ArtascopeException):
+    pass
+
+
+class APINotExisted(ArtascopeException):
+    pass
+
+
+class MissiCloudLoginCookie(ArtascopeException):
+    pass
+
+
+class UserConfigNotExisted(ArtascopeException):
+    pass
+
+
+class TaskNotExisted(ArtascopeException):
+    pass
+
+
+class FileStatusNotExisted(ArtascopeException):
+    pass
+
+
+class NeedLoginAgainException(ArtascopeException):
+    pass
+
+
+class NeedWaitForCaptchaException(ArtascopeException):
+    pass
+
+
+class ApiLimitException(ArtascopeException):
+    pass
+
+
 class SlackSenderException(ArtascopeException):
-    def __init__(self, msg=None):
-        self.msg = msg
+    pass

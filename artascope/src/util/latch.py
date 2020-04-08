@@ -27,12 +27,12 @@ class Latch:
             rlt = self._redis.set(self.latch_name, "lock", ex=self.expire, nx=True)
             logger.debug("lock:{}".format(str(rlt)))
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        # Remove the unpicklable entries.
-        del state["_redis"]
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        self._redis = PrefixRedis("latch", **self._redis_config)
+    # def __getstate__(self):
+    #     state = self.__dict__.copy()
+    #     # Remove the unpicklable entries.
+    #     del state["_redis"]
+    #     return state
+    #
+    # def __setstate__(self, state):
+    #     self.__dict__.update(state)
+    #     self._redis = PrefixRedis("latch", **self._redis_config)
