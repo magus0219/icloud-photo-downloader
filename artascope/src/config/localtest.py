@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Created by magus0219[magus0219@gmail.com] on 2020/4/3
-REDIS_CONFIG = {
-    "host": "redis",
-    "port": 6379,
-}
+# Created by magus0219[magus0219@gmail.com] on 2020/4/8
+REDIS_CONFIG = {"host": "127.0.0.1", "port": 6379, "db": 1}
 
 API_LATCH_LIMIT_PER_MINUTE = 30
 
@@ -21,7 +18,7 @@ LOG_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "generic": {
-            "format": "%(asctime)s [%(process)d] [%(levelname)s] %(name)s: %(message)s",
+            "format": "%(asctime)s [%(process)d] [%(levelname)s] %(name)s: %(message)s"
         },
         "verbose": {
             "format": "[%(process)s][%(thread)d][%(levelname)s][%(module)s][%(lineno)d]%(asctime)s %(name)s:%(message)s"
@@ -34,7 +31,7 @@ LOG_CONFIG = {
             "formatter": "verbose",
         },
         "file": {
-            "level": "INFO",
+            "level": "DEBUG",
             # 'class': 'logging.handlers.TimedRotatingFileHandler',
             "class": "logging.FileHandler",
             "formatter": "verbose",
@@ -45,6 +42,10 @@ LOG_CONFIG = {
         },
     },
     "loggers": {
-        "server": {"handlers": ["console"], "level": "INFO", "propagate": False,},
+        "server": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        }
     },
 }
