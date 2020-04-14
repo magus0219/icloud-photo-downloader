@@ -81,25 +81,7 @@ def captcha(username):
     elif request.method == "POST":
         data = request.form
 
-        user_setting = ucm.load(username)
         auth = AuthManager(username)
         auth.receive_captcha(data["captcha"])
-
-        current_task = tm.get_current_task_name(username)
-
-        if current_task:
-            task = tm.load_task(task_name=current_task)
-
-            task_name = sync.delay(
-                user_setting.icloud_username,
-                user_setting.icloud_password,
-                task.last,
-                DateUtil.get_date_from_timestamp(task.date_start)
-                if task.date_start
-                else None,
-                DateUtil.get_date_from_timestamp(task.date_end)
-                if task.date_end
-                else None,
-            )
 
         return redirect(url_for("task.get_task_list", username=username))

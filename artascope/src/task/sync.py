@@ -27,6 +27,7 @@ from artascope.src.patch.pyicloud import (
 from artascope.src.exception import (
     NeedLoginAgainException,
     ApiLimitException,
+    LoginTimeoutException,
 )
 from artascope.src.util.context_manager import api_exception_handler
 from artascope.src.util.date_util import DateTimeUtil
@@ -91,8 +92,8 @@ def sync(
     tm.attach_celery_task_id(task_name, self.request.id)
     am = AuthManager(username, password)
     with api_exception_handler(am) as api:
-        if isinstance(api, Exception):
-            raise api
+        if not api:
+            raise LoginTimeoutException()
 
         patch_photo_asset()
         patch_photo_album()
@@ -102,16 +103,11 @@ def sync(
             album_all.direction = "DESCENDING"
             album_all.page_size = API_PAGE_SIZE
 
-            album_len = len(album_all)
-            logger.info("album_len:{}".format(str(album_len)))
+            offset, cnt = album_all.calculate_offset_and_cnt(
+                last=last, date_start=date_start, date_end=date_end
+            )
 
-            cnt = 0
-            photos = [
-                photo
-                for photo in album_all.fetch_photos(
-                    album_len, last, date_start, date_end
-                )
-            ]
+            photos = [photo for photo in album_all.fetch_photos(offset=offset, cnt=cnt)]
         except PyiCloudAPIResponseException as e:
             if DEBUG:
                 logger.exception(e)
@@ -124,9 +120,10 @@ def sync(
         except Exception as e:
             raise
 
-        photos_len = len(photos)
-        tm.update_task_total(task_name, photos_len)
+        assert len(photos) == cnt
+        tm.update_task_total(task_name, cnt)
         logger.info("get photos meta data done.")
+
         batch = []
         for photo in photos:
             tm.add_file_status(task_name, photo)
@@ -136,14 +133,16 @@ def sync(
             batch.append(photo)
 
             if len(batch) == BATCH_CNT:
-                rlt = download_photo.delay(task_name, username, batch)
+                rlt = download_photo.delay(
+                    task_name, username, batch, offset, BATCH_CNT
+                )
                 tm.attach_celery_task_id(task_name, rlt.id)
                 batch = []
-            cnt += 1
+                offset -= BATCH_CNT
 
         if len(batch):
-            rlt = download_photo.delay(task_name, username, batch)
+            rlt = download_photo.delay(task_name, username, batch, offset, len(batch))
             tm.attach_celery_task_id(task_name, rlt.id)
-        logger.info("Need download {} photos".format(str(cnt)))
+        logger.info("Need download {} photos".format(cnt))
 
         return task_name

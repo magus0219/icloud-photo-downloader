@@ -7,11 +7,13 @@ import os
 import pytest
 import socket
 import sys
-import http.cookiejar as cookielib
-from collections import namedtuple
+import json
 from pathlib import Path
 import pyicloud
-from pyicloud.services.photos import PhotoAsset
+from pyicloud.services.photos import (
+    PhotoAsset,
+    PhotoAlbum,
+)
 from requests.exceptions import ConnectionError
 from pyicloud.exceptions import (
     PyiCloudAPIResponseException,
@@ -30,27 +32,28 @@ from artascope.src.lib.task_manager import (
     tm,
     TaskStatus,
 )
-from artascope.src.lib.user_config_manager import ucm
-from artascope.src.model.user_config import UserConfig
 from artascope.src.exception import (
     NeedLoginAgainException,
     ApiLimitException,
-    NeedWaitForCaptchaException,
+    LoginTimeoutException,
+    GoneException,
 )
+from artascope.test.task.conftest import MockPyiCloudService
+from artascope.test.conftest import DataException
 from artascope.src.util import get_logger
 
 
 logger = get_logger("test")
 
 
-class MockPyicloudSession:
-    def __init__(self):
-        self.headers = {}
-
-
-class MockPyicloudService:
-    def __init__(self):
-        self.session = MockPyicloudSession()
+# class MockPyicloudSession:
+#     def __init__(self):
+#         self.headers = {}
+#
+#
+# class MockPyicloudService:
+#     def __init__(self):
+#         self.session = MockPyicloudSession()
 
 
 def mock_update_file_status(self, photo, status):
@@ -65,7 +68,6 @@ file_size = 3 * 1024
 
 @pytest.fixture()
 def prepare_photo():
-
     if temp_file.exists():
         Path.unlink(temp_file)
     with open(temp_file, "w") as f:
@@ -74,41 +76,16 @@ def prepare_photo():
     if tgt_filepath.exists():
         Path.unlink(tgt_filepath)
 
-    yield PhotoAsset(service=MockPyicloudService(), master_record={}, asset_record={})
+    yield PhotoAsset(
+        service=MockPyiCloudService(
+            username="username", password="password", client_id="client_id"
+        ),
+        master_record={},
+        asset_record={},
+    )
 
     Path.unlink(temp_file)
     Path.unlink(tgt_filepath)
-
-
-COOKIE = namedtuple("Cookie", ["name", "path", "domain"])
-
-
-class MockPyiCloudSession:
-    def __init__(self):
-        self.cookies = cookielib.CookieJar()
-        cookie = COOKIE(name="X-APPLE-WEBAUTH-HSA-LOGIN", path=".", domain="icloud.com")
-        self.cookies.set_cookie(cookie)
-
-
-class MockPyiCloudService:
-    def __init__(self, username, password, client_id):
-        self.username = username
-        self.password = password
-        self.client_id = client_id
-
-        self._service_endpoint = "mock_endpoint"
-        self.params = {}
-        self.session = MockPyiCloudSession()
-
-    @property
-    def photos(self):
-        return {}
-
-    def authenticate(self):
-        return True
-
-    def _get_cookiejar_path(self):
-        return Path(tempfile.gettempdir()) / "test_cookie"
 
 
 @pytest.fixture()
@@ -120,12 +97,6 @@ def set_not_existed_tempdir(monkeypatch):
     yield
     if tempdir.exists():
         Path.rmdir(tempdir)
-
-
-@pytest.fixture()
-def set_user():
-    uc = UserConfig(icloud_username="username", icloud_password="password",)
-    ucm.save(uc)
 
 
 class TestDownloader:
@@ -332,15 +303,8 @@ class TestDownloader:
         assert "Range" not in photo._service.session.headers
 
     def test_download_photo(
-        self, monkeypatch, set_not_existed_tempdir, photos, set_user
+        self, monkeypatch, set_not_existed_tempdir, photos, mock_login, set_user
     ):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
         def mock_download_file(photo, filepath, size):
             return True
 
@@ -350,21 +314,16 @@ class TestDownloader:
             mock_download_file,
         )
 
-        download_photo(task_name="task_name", username="username", batch=photos)
+        download_photo(
+            task_name="task_name", username="username", batch=photos, offset=2, cnt=3
+        )
         assert tm.load_task(task_name="task_name").status == TaskStatus.SUCCESS
         for photo in photos:
             assert tm.load_file_status(photo.id).status == 100
 
-    def test_download_photo_src_path(self, monkeypatch, photos, set_user):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
+    def test_download_photo_src_path(self, monkeypatch, photos, mock_login, set_user):
         def mock_download_file(photo, filepath, size):
-            raise Exception(str(filepath))
+            raise DataException({"filepath": str(filepath)})
 
         monkeypatch.setattr(
             sys.modules["artascope.src.task.downloader"],
@@ -376,19 +335,21 @@ class TestDownloader:
             filename=photos[0].filename, ts=int(photos[0].created.timestamp())
         )
 
-        with pytest.raises(Exception, match=str(tempdir / filename)):
+        with pytest.raises(DataException,) as exc_info:
             download_photo(
-                task_name="task_name", username="username", batch=[photos[0]]
+                task_name="task_name",
+                username="username",
+                batch=[photos[0]],
+                offset=0,
+                cnt=1,
             )
+        assert json.dumps({"filepath": str(tempdir / filename)}, sort_keys=True) in str(
+            exc_info.value
+        )
 
-    def test_download_photo_upload_path(self, monkeypatch, photos, set_user):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
+    def test_download_photo_upload_path(
+        self, monkeypatch, photos, mock_login, set_user
+    ):
         def mock_download_file(photo, filepath, size):
             return True
 
@@ -400,7 +361,7 @@ class TestDownloader:
 
         class MockUploadToSFTPTask:
             def delay(self, username, src_filepath, filename, created_dt):
-                raise Exception(filename)
+                raise DataException({"filename": str(filename)})
 
         monkeypatch.setattr(
             sys.modules["artascope.src.task.downloader"],
@@ -408,10 +369,17 @@ class TestDownloader:
             MockUploadToSFTPTask(),
         )
 
-        with pytest.raises(Exception, match=photos[0].filename):
+        with pytest.raises(DataException,) as exc_info:
             download_photo(
-                task_name="task_name", username="username", batch=[photos[0]]
+                task_name="task_name",
+                username="username",
+                batch=[photos[0]],
+                offset=0,
+                cnt=1,
             )
+        assert json.dumps({"filename": photos[0].filename}, sort_keys=True) in str(
+            exc_info.value
+        )
 
     def test_download_photo_without_login(
         self, monkeypatch, set_not_existed_tempdir, photos, set_user
@@ -425,19 +393,23 @@ class TestDownloader:
             LoginStatus.CAPTCHA_SENT
         )
 
-        download_photo(task_name="task_name", username="username", batch=photos)
+        with pytest.raises(LoginTimeoutException,):
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
-    def test_download_photo_need_login_again(self, monkeypatch, photos, set_user):
-        monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
-
+    def test_download_photo_need_login_again(
+        self, monkeypatch, photos, mock_login, set_user
+    ):
         def mock_send_captcha(self):
             self.set_login_status(LoginStatus.CAPTCHA_SENT)
             return True
 
-        auth_manager = AuthManager(username="username", password="password")
-        monkeypatch.setattr(
-            AuthManager, "send_captcha", mock_send_captcha.__get__(auth_manager)
-        )
+        monkeypatch.setattr(AuthManager, "send_captcha", mock_send_captcha)
 
         def mock_download_file(photo, filepath, size):
             raise NeedLoginAgainException()
@@ -448,17 +420,18 @@ class TestDownloader:
             mock_download_file,
         )
 
-        auth_manager.set_login_status(LoginStatus.SUCCESS)
-
-        download_photo(task_name="task_name", username="username", batch=photos)
-
-        assert auth_manager.get_login_status() == LoginStatus.CAPTCHA_SENT
-
-    def test_download_photo_api_limit(self, monkeypatch, photos, set_user):
-        monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
-
         auth_manager = AuthManager(username="username", password="password")
+        auth_manager.set_login_status(LoginStatus.SUCCESS)
+        with pytest.raises(NeedLoginAgainException):
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
+    def test_download_photo_api_limit(self, monkeypatch, photos, mock_login, set_user):
         def mock_download_file(photo, filepath, size):
             raise ApiLimitException()
 
@@ -468,18 +441,23 @@ class TestDownloader:
             mock_download_file,
         )
 
+        auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
 
         with pytest.raises(ApiLimitException):
-            download_photo(task_name="task_name", username="username", batch=photos)
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
         assert auth_manager.get_login_status() == LoginStatus.SUCCESS
 
-    def test_download_photo_api_not_index(self, monkeypatch, photos, set_user):
-        monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
-
-        auth_manager = AuthManager(username="username", password="password")
-
+    def test_download_photo_api_not_index(
+        self, monkeypatch, photos, mock_login, set_user
+    ):
         def mock_download_file(photo, filepath, size):
             raise PyiCloudServiceNotActivatedException("index not finish")
 
@@ -489,26 +467,30 @@ class TestDownloader:
             mock_download_file,
         )
 
+        auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
 
         with pytest.raises(
             PyiCloudServiceNotActivatedException, match="index not finish"
         ):
-            download_photo(task_name="task_name", username="username", batch=photos)
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
         assert auth_manager.get_login_status() == LoginStatus.SUCCESS
 
-    def test_download_photo_api_exception(self, monkeypatch, photos, set_user):
-        monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
-
+    def test_download_photo_api_exception(
+        self, monkeypatch, photos, mock_login, set_user
+    ):
         def mock_check_login_status(self):
             return
 
-        auth_manager = AuthManager(username="username", password="password")
         monkeypatch.setattr(
-            AuthManager,
-            "check_login_status",
-            mock_check_login_status.__get__(auth_manager),
+            AuthManager, "check_login_status", mock_check_login_status,
         )
 
         def mock_download_file(photo, filepath, size):
@@ -520,24 +502,26 @@ class TestDownloader:
             mock_download_file,
         )
 
+        auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
 
         with pytest.raises(PyiCloudAPIResponseException, match="foo"):
-            download_photo(task_name="task_name", username="username", batch=photos)
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
         assert auth_manager.get_login_status() == LoginStatus.SUCCESS
 
-    def test_download_photo_exception(self, monkeypatch, photos, set_user):
-        monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
-
+    def test_download_photo_exception(self, monkeypatch, photos, mock_login, set_user):
         def mock_check_login_status(self):
             return
 
-        auth_manager = AuthManager(username="username", password="password")
         monkeypatch.setattr(
-            AuthManager,
-            "check_login_status",
-            mock_check_login_status.__get__(auth_manager),
+            AuthManager, "check_login_status", mock_check_login_status,
         )
 
         def mock_download_file(photo, filepath, size):
@@ -549,9 +533,51 @@ class TestDownloader:
             mock_download_file,
         )
 
+        auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
 
         with pytest.raises(Exception, match="foo"):
-            download_photo(task_name="task_name", username="username", batch=photos)
+            download_photo(
+                task_name="task_name",
+                username="username",
+                batch=photos,
+                offset=2,
+                cnt=3,
+            )
 
         assert auth_manager.get_login_status() == LoginStatus.SUCCESS
+
+    def test_download_photo_with_gone_exception(
+        self, monkeypatch, set_not_existed_tempdir, photos, mock_login, set_user
+    ):
+        trigger = False
+
+        def mock_download_file(photo, filepath, size):
+            nonlocal trigger
+            if photo.id == photos[1].id and not trigger:
+                trigger = True
+                raise GoneException
+            else:
+                return
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.task.downloader"],
+            "download_file",
+            mock_download_file,
+        )
+
+        def mock_fetch_photos(self, offset, cnt):
+            return photos[len(photos) - offset - 1 : len(photos) - offset - 1 + cnt]
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.patch.pyicloud"],
+            "fetch_photos",
+            mock_fetch_photos,
+        )
+
+        download_photo(
+            task_name="task_name", username="username", batch=photos, offset=2, cnt=3
+        )
+        assert tm.load_task(task_name="task_name").status == TaskStatus.SUCCESS
+        for photo in photos:
+            assert tm.load_file_status(photo.id).status == 100

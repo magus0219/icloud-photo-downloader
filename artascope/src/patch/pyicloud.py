@@ -10,6 +10,7 @@ from pyicloud.services.photos import (
     PhotoAsset,
     PhotoAlbum,
 )
+from pyicloud.base import PyiCloudService
 from artascope.src.util.latch import Latch
 from artascope.src.util import get_logger
 from artascope.src.util.date_util import DateUtil
@@ -20,7 +21,7 @@ logger = get_logger("server.patch")
 
 
 def photo_asset_get_state(self) -> None:
-    """Remove stateful attribute _service
+    """Remove stateful attribute _service to adapt pickle module
 
     :param self:
     :return:
@@ -135,7 +136,7 @@ def __get_photos_by_date(self):
             break
 
 
-def __get_offset_and_cnt_by_desc(
+def __get_offset_and_cnt_by_date(
     self, album_len, date_start: datetime.date, date_end: datetime.date
 ) -> (int, int):
     """Get idx and cnt of date query
@@ -183,13 +184,22 @@ def __get_offset_and_cnt_by_desc(
     return album_len - 1 - idx_first, idx_last - idx_first + 1
 
 
-def fetch_photos(
+def calculate_offset_and_cnt(
     self,
     album_len=None,
     last=None,
     date_start: datetime.date = None,
     date_end: datetime.date = None,
 ):
+    """A method to calculate offset and cnt from input
+
+    :param self:
+    :param album_len: len of album
+    :param last: start date of query
+    :param date_start: start date of query
+    :param date_end: end date of query(include)
+    :return:
+    """
     if not album_len:
         album_len = len(self)
         logger.info("album_len:{}".format(str(album_len)))
@@ -198,7 +208,7 @@ def fetch_photos(
         if not date_end:
             date_end = DateUtil.get_tomorrow()
 
-        offset, cnt = self.__get_offset_and_cnt_by_desc(album_len, date_start, date_end)
+        offset, cnt = self.__get_offset_and_cnt_by_date(album_len, date_start, date_end)
 
     elif last:
         if last > album_len:
@@ -210,7 +220,27 @@ def fetch_photos(
         cnt = album_len
 
     logger.info("offset:{}, cnt:{}".format(offset, cnt))
+    return offset, cnt
 
+
+def fetch_photos(
+    self, offset: int, cnt: int,
+):
+    """Fetch photos using offset and cnt
+
+    Photos are sorted by date in ascending order, and the idx is reverted.
+    For example:
+    item    idx
+    0       3
+    1       2
+    2       1
+    3       0
+
+    :param self:
+    :param offset:
+    :param cnt:
+    :return:
+    """
     while cnt:
         url = ("%s/records/query?" % self.service._service_endpoint) + urlencode(
             self.service.params
@@ -254,9 +284,10 @@ def fetch_photos(
 
 def patch_photo_album():
     setattr(PhotoAlbum, "fetch_photos", fetch_photos)
+    setattr(PhotoAlbum, "calculate_offset_and_cnt", calculate_offset_and_cnt)
     setattr(PhotoAlbum, "__list_query_gen_simple", __list_query_gen_simple)
     setattr(PhotoAlbum, "__get_photos_by_date", __get_photos_by_date)
-    setattr(PhotoAlbum, "__get_offset_and_cnt_by_desc", __get_offset_and_cnt_by_desc)
+    setattr(PhotoAlbum, "__get_offset_and_cnt_by_date", __get_offset_and_cnt_by_date)
 
 
 latch = Latch("api", API_LATCH_LIMIT_PER_MINUTE)
@@ -281,3 +312,7 @@ def post(self, url, data=None, json=None, **kwargs):
 def patch_session():
     setattr(getattr(sys.modules["pyicloud.base"], "PyiCloudSession"), "post", post)
     setattr(getattr(sys.modules["pyicloud.base"], "PyiCloudSession"), "get", get)
+
+
+# https://cvws.icloud-content.com/B/AZtBH0pCybo2VLI56JDiN2tYEsIzAV9WGhMjvVqSkoAPCgIZRFsU1zPJ/${f}?o=AlavBsN-b8QRWKfWOwjPE3bm8ahl7XccMIQmelZ7Yk_g&v=1&x=3&a=CAogSWogKPkr3Qie1Y7PWeNDQYjUBDTDCtZFoCO7SP3DCJcSHRDzq4y6li4Y84jou5YuIgEAUgRYEsIzWgQU1zPJ&e=1586578982&k=MozOm9oGk56EQbrrzAYzBg&fl=&r=db863a97-55f8-45f8-ae53-049924b61988-1&ckc=com.apple.photos.cloud&ckz=PrimarySync&y=1&p=69&s=0azouzetjrZFQQkmupdat2aA2XM
+# https://cvws.icloud-content.com/B/AZtBH0pCybo2VLI56JDiN2tYEsIzAV9WGhMjvVqSkoAPCgIZRFsU1zPJ/${f}?o=AqCwrrDt_0hya30XIaca1GcSTX10pgVL46wo0Wlclts8&v=1&x=3&a=CAoghtALcWJwegM-oG34De1uLqeh9QnQxEt4_AWu1p4eSWwSHRDsjKa8li4Y7OmBvpYuIgEAUgRYEsIzWgQU1zPJ&e=1586583598&k=MozOm9oGk56EQbrrzAYzBg&fl=&r=ac781fa5-1f95-40c4-8d2c-670fc74b95b2-1&ckc=com.apple.photos.cloud&ckz=PrimarySync&y=1&p=69&s=vUczMzSTJHTb4sS58kXh8Pcu3A8

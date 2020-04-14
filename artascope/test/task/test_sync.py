@@ -28,45 +28,21 @@ from artascope.src.exception import (
     ApiLimitException,
 )
 from artascope.src.util.date_util import DateUtil
-from artascope.test.conftest import MOCK_PHOTO_ASSET_DATA
+from artascope.test.conftest import MOCK_PHOTO_DATA
 
 logger = get_logger("test")
 
 
 @pytest.fixture()
-def set_user():
-    uc = UserConfig(icloud_username="username", icloud_password="password",)
-    ucm.save(uc)
+def mock_calculate_offset_and_cnt(monkeypatch):
+    def mock_calculate_offset_and_cnt(self, last=None, date_start=None, date_end=None):
+        return len(MOCK_PHOTO_DATA) - 1, len(MOCK_PHOTO_DATA)
 
-
-class MockPhotoService:
-    @property
-    def all(self):
-        return PhotoAlbum(
-            service=self,
-            name="all",
-            list_type=None,
-            obj_type=None,
-            direction="DESCENDING",
-        )
-
-
-class MockPyiCloudService:
-    def __init__(self, username, password, client_id):
-        self.username = username
-        self.password = password
-        self.client_id = client_id
-
-        self._service_endpoint = "mock_endpoint"
-        self.params = {}
-        self.session = {}
-
-    @property
-    def photos(self):
-        return MockPhotoService()
-
-    def authenticate(self):
-        return True
+    monkeypatch.setattr(
+        sys.modules["artascope.src.patch.pyicloud"],
+        "calculate_offset_and_cnt",
+        mock_calculate_offset_and_cnt,
+    )
 
 
 class TestSync:
@@ -77,20 +53,17 @@ class TestSync:
             date_start=DateUtil.get_today(), date_end=DateUtil.get_today()
         )
 
-    def test_sync(self, photos, set_user, monkeypatch, celery_app, celery_worker):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
-        def mock_len(self):
-            return len(MOCK_PHOTO_ASSET_DATA)
-
-        monkeypatch.setattr(PhotoAlbum, "__len__", mock_len)
-
-        def mock_fetch_photos(self, album_len, last, date_start, date_end):
+    def test_sync(
+        self,
+        photos,
+        set_user,
+        monkeypatch,
+        mock_login,
+        mock_calculate_offset_and_cnt,
+        celery_app,
+        celery_worker,
+    ):
+        def mock_fetch_photos(self, offset, cnt):
             return photos
 
         monkeypatch.setattr(
@@ -105,22 +78,12 @@ class TestSync:
         ).get(10)
 
         assert len(tm.get_celery_task_id(task_name)) == 3
-        assert tm.load_task(task_name).cnt_total == len(MOCK_PHOTO_ASSET_DATA)
+        assert tm.load_task(task_name).cnt_total == len(MOCK_PHOTO_DATA)
 
-    def test_sync_with_need_login_again(self, monkeypatch):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
-        def mock_len(self):
-            return len(MOCK_PHOTO_ASSET_DATA)
-
-        monkeypatch.setattr(PhotoAlbum, "__len__", mock_len)
-
-        def mock_fetch_photos(self, album_len, last, date_start, date_end):
+    def test_sync_with_need_login_again(
+        self, monkeypatch, mock_login, mock_calculate_offset_and_cnt
+    ):
+        def mock_fetch_photos(self, offset, cnt):
             raise PyiCloudAPIResponseException("Invalid global session")
 
         monkeypatch.setattr(
@@ -129,26 +92,15 @@ class TestSync:
             mock_fetch_photos,
         )
 
-        sync.apply(
-            kwargs={"username": "username", "password": "password"},
-            task_id="mock_test_id",
-            throw=True,
-        )
-
-    def test_sync_with_api_limit(self, monkeypatch):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
+        with pytest.raises(NeedLoginAgainException):
+            sync.apply(
+                kwargs={"username": "username", "password": "password"}, throw=True,
             )
 
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
-        def mock_len(self):
-            return len(MOCK_PHOTO_ASSET_DATA)
-
-        monkeypatch.setattr(PhotoAlbum, "__len__", mock_len)
-
-        def mock_fetch_photos(self, album_len, last, date_start, date_end):
+    def test_sync_with_api_limit(
+        self, monkeypatch, mock_login, mock_calculate_offset_and_cnt
+    ):
+        def mock_fetch_photos(self, offset, cnt):
             raise PyiCloudAPIResponseException(
                 "private db access disabled for this account"
             )
@@ -161,25 +113,13 @@ class TestSync:
 
         with pytest.raises(ApiLimitException):
             sync.apply(
-                kwargs={"username": "username", "password": "password"},
-                task_id="mock_test_id",
-                throw=True,
+                kwargs={"username": "username", "password": "password"}, throw=True,
             )
 
-    def test_sync_with_api_exception(self, monkeypatch):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
-        def mock_len(self):
-            return len(MOCK_PHOTO_ASSET_DATA)
-
-        monkeypatch.setattr(PhotoAlbum, "__len__", mock_len)
-
-        def mock_fetch_photos(self, album_len, last, date_start, date_end):
+    def test_sync_with_api_exception(
+        self, monkeypatch, mock_login, mock_calculate_offset_and_cnt
+    ):
+        def mock_fetch_photos(self, offset, cnt):
             raise PyiCloudAPIResponseException("foo")
 
         monkeypatch.setattr(
@@ -190,25 +130,13 @@ class TestSync:
 
         with pytest.raises(PyiCloudAPIResponseException, match="foo"):
             sync.apply(
-                kwargs={"username": "username", "password": "password"},
-                task_id="mock_test_id",
-                throw=True,
+                kwargs={"username": "username", "password": "password"}, throw=True,
             )
 
-    def test_sync_with_other_exception(self, monkeypatch):
-        def mock_login(self):
-            return MockPyiCloudService(
-                username="username", password="password", client_id="client_id"
-            )
-
-        monkeypatch.setattr(AuthManager, "login", mock_login)
-
-        def mock_len(self):
-            return len(MOCK_PHOTO_ASSET_DATA)
-
-        monkeypatch.setattr(PhotoAlbum, "__len__", mock_len)
-
-        def mock_fetch_photos(self, album_len, last, date_start, date_end):
+    def test_sync_with_other_exception(
+        self, monkeypatch, mock_login, mock_calculate_offset_and_cnt
+    ):
+        def mock_fetch_photos(self, offset, cnt):
             raise Exception("foo")
 
         monkeypatch.setattr(
@@ -219,7 +147,5 @@ class TestSync:
 
         with pytest.raises(Exception, match="foo"):
             sync.apply(
-                kwargs={"username": "username", "password": "password"},
-                task_id="mock_test_id",
-                throw=True,
+                kwargs={"username": "username", "password": "password"}, throw=True,
             )

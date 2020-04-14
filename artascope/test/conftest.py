@@ -6,17 +6,19 @@ import pytest
 import redis
 import datetime
 import base64
+import json
 from pyicloud.services.photos import PhotoAsset
 from artascope.src.config import (
     REDIS_CONFIG,
     TIMEZONE,
 )
+from artascope.src.util.date_util import DateTimeUtil
 from artascope.src.lib.task_manager import (
     tm,
     TaskRunType,
 )
 
-MOCK_PHOTO_ASSET_DATA = [
+MOCK_PHOTO_DATA = [
     {
         "master": {
             "recordName": "record1",
@@ -77,15 +79,30 @@ MOCK_PHOTO_ASSET_DATA = [
 @pytest.fixture()
 def photos():
     tm.add_task(task_name="task_name", username="username", run_type=TaskRunType.ALL)
-    tm.update_task_total(task_name="task_name", total=len(MOCK_PHOTO_ASSET_DATA))
+    tm.update_task_total(task_name="task_name", total=len(MOCK_PHOTO_DATA))
     photos = []
-    for one in MOCK_PHOTO_ASSET_DATA:
+    for one in MOCK_PHOTO_DATA:
         photo = PhotoAsset(
             service={}, master_record=one["master"], asset_record=one["asset"]
         )
         photos.append(photo)
         tm.add_file_status(task_name="task_name", file=photo)
     return photos
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date):
+            return DateTimeUtil.get_datetime_from_date(obj).timestamp()
+        return super(CustomEncoder, self).default(obj)
+
+
+class DataException(Exception):
+    def __init__(self, data: dict):
+        self.data = data
+
+    def __str__(self):
+        return json.dumps(self.data, sort_keys=True, cls=CustomEncoder)
 
 
 def pytest_runtest_setup():

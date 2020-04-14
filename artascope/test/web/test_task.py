@@ -13,21 +13,7 @@ from artascope.src.lib.task_manager import (
     TaskRunType,
 )
 from artascope.src.util.date_util import DateTimeUtil
-
-
-class CustomEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, datetime.date):
-            return DateTimeUtil.get_datetime_from_date(obj).timestamp()
-        return super(CustomEncoder, self).default(obj)
-
-
-class DataException(Exception):
-    def __init__(self, data: dict):
-        self.data = data
-
-    def __str__(self):
-        return json.dumps(self.data, sort_keys=True, cls=CustomEncoder)
+from artascope.test.conftest import DataException
 
 
 @pytest.mark.web

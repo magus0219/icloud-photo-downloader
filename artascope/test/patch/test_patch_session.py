@@ -6,15 +6,7 @@ import pytest
 import json
 from pyicloud.base import PyiCloudSession
 from artascope.src.patch.pyicloud import patch_session
-
-
-class DataException(Exception):
-    def __init__(self, data: dict):
-        self.data = data
-
-    def __str__(self):
-        print("aha", json.dumps(self.data, sort_keys=True).encode())
-        return json.dumps(self.data, sort_keys=True)
+from artascope.test.conftest import DataException
 
 
 class MockPyiCloudService:
@@ -34,13 +26,12 @@ class TestPyiCloudSession:
 
         data = {"args": ["GET", "url"], "kwargs": {"data": "abc", "json": None}}
 
-        print("hah", json.dumps(data, sort_keys=True).encode())
-        with pytest.raises(DataException,) as excinfo:
+        with pytest.raises(DataException,) as exc_info:
             api.session.get("url", data="abc")
 
-        assert json.dumps(data, sort_keys=True) in str(excinfo.value)
+        assert json.dumps(data, sort_keys=True) in str(exc_info.value)
         data = {"args": ["POST", "url"], "kwargs": {"data": "abc", "json": None}}
 
-        with pytest.raises(DataException,) as excinfo:
+        with pytest.raises(DataException,) as exc_info:
             api.session.post("url", data="abc")
-        assert json.dumps(data, sort_keys=True) in str(excinfo.value)
+        assert json.dumps(data, sort_keys=True) in str(exc_info.value)

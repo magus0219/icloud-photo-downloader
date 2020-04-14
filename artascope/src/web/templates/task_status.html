@@ -19,7 +19,7 @@
         {% set ns = namespace(progress=0) %}
         {% for one_task in tasks %}
         {% if one_task.task_name == task_name %}
-        {% set ns.progress = one_task.cnt_done/one_task.cnt_total if one_task.cnt_total != 0 else 0 %}
+        {% set ns.progress = one_task.cnt_done/one_task.cnt_total*100 if one_task.cnt_total != 0 else 0 %}
         {{ progress }}
         {{ one_task.cnt_done }} / {{ one_task.cnt_total }}
         {% endif %}

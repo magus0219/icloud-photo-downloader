@@ -51,39 +51,49 @@ def upload_to_sftp(
     """
     user_setting = ucm.load(username)
 
-    ssh_client = paramiko.client.SSHClient()
-    ssh_client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
-    ssh_client.connect(
-        hostname=user_setting.sftp_host,
-        port=user_setting.sftp_port,
-        username=user_setting.sftp_username,
-        password=user_setting.sftp_password,
+    logger.info(
+        "host:{host}, port:{port}".format(
+            host=user_setting.sftp_host, port=user_setting.sftp_port
+        )
     )
 
-    sftp_client = ssh_client.open_sftp()
     try:
-        sftp_client.chdir(user_setting.sftp_dir)
-    except FileNotFoundError:
-        for part in Path(user_setting.sftp_dir).parts:
-            print("part", part)
-            try:
-                sftp_client.mkdir(part)
-                sftp_client.chdir(part)
-            except OSError:
-                sftp_client.chdir(part)
-                pass
+        ssh_client = paramiko.client.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
+        ssh_client.connect(
+            hostname=user_setting.sftp_host,
+            port=user_setting.sftp_port,
+            username=user_setting.sftp_username,
+            password=user_setting.sftp_password,
+        )
 
-    date_folder = DateUtil.get_str_from_date(created_dt)
-    if date_folder not in sftp_client.listdir():
-        sftp_client.mkdir(date_folder)
+        sftp_client = ssh_client.open_sftp()
+        try:
+            sftp_client.chdir(user_setting.sftp_dir)
+        except FileNotFoundError:
+            for part in Path(user_setting.sftp_dir).parts:
+                print("part", part)
+                try:
+                    sftp_client.mkdir(part)
+                    sftp_client.chdir(part)
+                except OSError:
+                    sftp_client.chdir(part)
+                    pass
 
-    tgt_filepath = Path(date_folder) / filename
-    logger.debug("target position:{}".format(str(tgt_filepath)))
-    try:
-        sftp_client.remove(str(tgt_filepath))
-    except FileNotFoundError as e:
-        pass
-    sftp_client.put(src_filepath, str(tgt_filepath))
-    modify_meta(sftp_client, str(tgt_filepath), filename, created_dt)
+        date_folder = DateUtil.get_str_from_date(created_dt)
+        if date_folder not in sftp_client.listdir():
+            sftp_client.mkdir(date_folder)
 
-    os.remove(src_filepath)
+        tgt_filepath = Path(date_folder) / filename
+        logger.debug("target position:{}".format(str(tgt_filepath)))
+        try:
+            sftp_client.remove(str(tgt_filepath))
+        except FileNotFoundError as e:
+            pass
+        sftp_client.put(src_filepath, str(tgt_filepath))
+        modify_meta(sftp_client, str(tgt_filepath), filename, created_dt)
+
+        os.remove(src_filepath)
+    except Exception as e:
+        logger.exception(e)
+        raise

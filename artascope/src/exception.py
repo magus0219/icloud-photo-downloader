@@ -45,7 +45,15 @@ class NeedLoginAgainException(ArtascopeException):
     pass
 
 
-class NeedWaitForCaptchaException(ArtascopeException):
+class GoneException(ArtascopeException):
+    pass
+
+
+class UnableToSendCaptchaException(ArtascopeException):
+    pass
+
+
+class LoginTimeoutException(ArtascopeException):
     pass
 
 
