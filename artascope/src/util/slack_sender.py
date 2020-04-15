@@ -6,7 +6,6 @@ import uuid
 from types import FunctionType
 import slack
 from artascope.src.config import (
-    SLACK_TOKEN,
     REDIS_SLACK_MSG_EXPIRE,
     REDIS_CONFIG,
 )
@@ -15,7 +14,6 @@ from artascope.src.util.prefix_redis import PrefixRedis
 from artascope.src.exception import SlackSenderException
 
 
-client = slack.WebClient(token=SLACK_TOKEN)
 redis = PrefixRedis("slack", **REDIS_CONFIG)
 
 
@@ -30,7 +28,7 @@ def get_msg_block(channel_id, msg):
     }
 
 
-def get_channel_id(channel: str = "dev"):
+def get_channel_id(client: slack.WebClient, channel: str = "dev"):
     # 获取channel_id
     channel_id = redis.hget("channel", channel)
     if channel_id is None:
@@ -48,6 +46,7 @@ def get_channel_id(channel: str = "dev"):
 
 @celery_app.task(retry=True)
 def send_message(
+    token: str,
     msg: str,
     channel: str = "dev",
     msg_uuid=None,
@@ -55,7 +54,8 @@ def send_message(
     callback: FunctionType = None,
     callback_params: dict = None,
 ):
-    channel_id = get_channel_id(channel)
+    client = slack.WebClient(token=token)
+    channel_id = get_channel_id(client, channel)
 
     if not msg_uuid:
         response = client.chat_postMessage(**msg_generator(channel_id, msg))

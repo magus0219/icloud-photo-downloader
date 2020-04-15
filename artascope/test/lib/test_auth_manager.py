@@ -3,6 +3,7 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/3/30
 import pytest
+import sys
 import tempfile
 import json
 import http.cookiejar as cookielib
@@ -93,7 +94,7 @@ class MockPyiCloudService:
 
 
 class MockCeleryTask:
-    def delay(self, msg):
+    def delay(self, token, channel, msg):
         raise DataException({"msg": msg})
 
 
@@ -188,21 +189,27 @@ class TestAuthManager:
             icloud_username="username",
             icloud_password="password",
             notify_type=NotifyType.SLACK,
+            slack_token="abcd",
+            slack_channel="dev",
             admin_url_prefix="test_url",
         )
         ucm.save(uc)
         am._icloud_api = MockPyiCloudService(
             username="username", password="password", client_id="client_id"
         )
-        monkeypatch.setattr(auth_manager, "send_message", MockCeleryTask())
+        monkeypatch.setattr(
+            sys.modules["artascope.src.lib.msg_manager"],
+            "send_slack_message",
+            MockCeleryTask(),
+        )
 
         data = {
-            "msg": "Goto {url_prefix}/user/captcha/<username> to enter your icloud HSA captcha!".format(
+            "msg": "Goto {url_prefix}/user/captcha/username to enter your icloud HSA captcha!".format(
                 url_prefix=uc.admin_url_prefix, username="username"
             )
         }
         with pytest.raises(DataException,) as exc_info:
-            am.send_captcha(notify_type=NotifyType.SLACK)
+            am.send_captcha()
         assert json.dumps(data, sort_keys=True) in str(exc_info.value)
 
         assert am.get_login_status() == LoginStatus.CAPTCHA_SENT

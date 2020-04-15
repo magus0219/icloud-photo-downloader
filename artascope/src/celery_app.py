@@ -31,6 +31,12 @@ app.conf.update(
     task_serializer="pickle",
     result_serializer="pickle",
     accept_content=["json", "pickle"],
+    task_routes={
+        "artascope.src.task.post_action.sftp.*": {"queue": "upload"},
+        "artascope.src.util.slack_sender.*": {"queue": "msg"},
+    },
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
 )
 
 app.conf.beat_schedule = {

@@ -8,6 +8,7 @@ from artascope.src.model.mixin import JsonDataMixin
 class NotifyType:
     NONE = 0
     SLACK = 1
+    EMAIL = 2
 
 
 class TargetType:

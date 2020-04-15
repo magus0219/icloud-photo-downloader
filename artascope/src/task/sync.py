@@ -29,7 +29,10 @@ from artascope.src.exception import (
     ApiLimitException,
     LoginTimeoutException,
 )
-from artascope.src.util.context_manager import api_exception_handler
+from artascope.src.util.context_manager import (
+    task_exception_handler,
+    api_exception_handler,
+)
 from artascope.src.util.date_util import DateTimeUtil
 
 logger = get_logger("server")
@@ -91,14 +94,14 @@ def sync(
     )
     tm.attach_celery_task_id(task_name, self.request.id)
     am = AuthManager(username, password)
-    with api_exception_handler(am) as api:
+    with task_exception_handler(am) as api:
         if not api:
             raise LoginTimeoutException()
 
         patch_photo_asset()
         patch_photo_album()
 
-        try:
+        with api_exception_handler():
             album_all = api.photos.all
             album_all.direction = "DESCENDING"
             album_all.page_size = API_PAGE_SIZE
@@ -108,17 +111,6 @@ def sync(
             )
 
             photos = [photo for photo in album_all.fetch_photos(offset=offset, cnt=cnt)]
-        except PyiCloudAPIResponseException as e:
-            if DEBUG:
-                logger.exception(e)
-            if "Invalid global session" in str(e):
-                raise NeedLoginAgainException()
-            elif "private db access disabled for this account" in str(e):
-                raise ApiLimitException()
-            else:
-                raise
-        except Exception as e:
-            raise
 
         assert len(photos) == cnt
         tm.update_task_total(task_name, cnt)

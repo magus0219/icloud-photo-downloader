@@ -35,7 +35,10 @@ from artascope.src.exception import (
     GoneException,
     LoginTimeoutException,
 )
-from artascope.src.util.context_manager import api_exception_handler
+from artascope.src.util.context_manager import (
+    task_exception_handler,
+    api_exception_handler,
+)
 
 logger = get_logger("server")
 
@@ -61,7 +64,7 @@ def download_file(photo: PhotoAsset, filepath: Path, file_size: int) -> None:
     size_downloaded = get_file_size(filepath)
 
     while size_downloaded < file_size:
-        try:
+        with api_exception_handler():
             photo._service.session.headers["Range"] = "bytes=%d-" % size_downloaded
             download = photo.download(timeout=30)
             has_downloaded = size_downloaded
@@ -77,26 +80,10 @@ def download_file(photo: PhotoAsset, filepath: Path, file_size: int) -> None:
                             percent=has_downloaded / file_size * 100, cnt=has_downloaded
                         )
                     )
-        except (ConnectionError, socket.timeout) as e:
-            pass
-        except PyiCloudAPIResponseException as e:
-            if DEBUG:
-                logger.exception(e)
-            if "Gone (410)" in str(e):
-                logger.info("Gone（410）happened.")
-                raise GoneException()
-            elif "Invalid global session" in str(e):
-                raise NeedLoginAgainException()
-            elif "private db access disabled for this account" in str(e):
-                raise ApiLimitException()
-            else:
-                raise
-        except Exception as e:
-            raise
-        finally:
-            size_downloaded = get_file_size(filepath)
-            if "Range" in photo._service.session.headers:
-                del photo._service.session.headers["Range"]
+
+        size_downloaded = get_file_size(filepath)
+        if "Range" in photo._service.session.headers:
+            del photo._service.session.headers["Range"]
 
 
 @celery_app.task(
@@ -121,7 +108,7 @@ def download_photo(
     patch_photo_album()
 
     am = AuthManager(username)
-    with api_exception_handler(am) as api:
+    with task_exception_handler(am) as api:
         if not api:
             raise LoginTimeoutException()
 
@@ -168,5 +155,9 @@ def download_photo(
             except GoneException as e:
                 offset -= idx
                 cnt -= idx
-                batch = album_all.fetch_photos(offset=offset, cnt=cnt)
+                fetch_done = False
+                while not fetch_done:
+                    with api_exception_handler():
+                        batch = album_all.fetch_photos(offset=offset, cnt=cnt)
+                        fetch_done = True
                 idx = 0

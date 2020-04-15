@@ -9,6 +9,7 @@ from artascope.src.util.prefix_redis import PrefixRedis
 from artascope.src.config import REDIS_CONFIG
 from artascope.src.util import get_logger
 from artascope.src.util.date_util import DateTimeUtil
+from artascope.src.lib.msg_manager import MsgManager
 from artascope.src.model.task import *
 from artascope.src.exception import (
     TaskNotExisted,
@@ -86,6 +87,13 @@ class TaskManager:
         if self.get_current_task_name(task.username) == task_name:
             self.clear_current_task_name(task.username)
 
+        MsgManager.send_message(
+            username=task.username,
+            msg="Sync Task[{task_name}] of User [{user}] failed!".format(
+                task_name=task.task_name, user=task.username
+            ),
+        )
+
     def update_task_total(self, task_name: str, total: int) -> None:
         task = self.load_task(task_name)
         task.cnt_total = total
@@ -101,6 +109,13 @@ class TaskManager:
         task.status = TaskStatus.SUCCESS
         self.save_task(task)
         self.clear_current_task_name(task.username)
+
+        MsgManager.send_message(
+            username=task.username,
+            msg="Sync Task[{task_name}] of User [{user}] succeeded!".format(
+                task_name=task.task_name, user=task.username
+            ),
+        )
 
     def clear_current_task_name(self, username: str) -> None:
         self._redis.delete(
@@ -150,6 +165,13 @@ class TaskManager:
         )
         self.save_task(task)
         self.set_current_task_name(username, task_name)
+
+        MsgManager.send_message(
+            username=task.username,
+            msg="Sync Task[{task_name}] of User [{user}] started!".format(
+                task_name=task.task_name, user=task.username
+            ),
+        )
 
     def get_task_list(self, username: str = None) -> typing.List[TaskInfo]:
         if not username:

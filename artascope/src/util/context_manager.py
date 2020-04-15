@@ -3,7 +3,9 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/4
 import time
+import socket
 from contextlib import contextmanager
+from requests.exceptions import ConnectionError
 from artascope.src.lib.auth_manager import AuthManager
 from pyicloud.exceptions import (
     PyiCloudAPIResponseException,
@@ -14,11 +16,13 @@ from artascope.src.exception import (
     ApiLimitException,
     UnableToSendCaptchaException,
     LoginTimeoutException,
+    GoneException,
 )
 from artascope.src.util.date_util import DateTimeUtil
 from artascope.src.util import get_logger
 from artascope.src.lib.auth_manager import LoginStatus
 from artascope.src.config import (
+    DEBUG,
     SECONDS_WAIT_AFTER_LOGIN_FAIL,
     SECONDS_WAIT_FOR_API_LIMIT,
     SECONDS_WAIT_LOGIN,
@@ -29,7 +33,7 @@ logger = get_logger("server")
 
 
 @contextmanager
-def api_exception_handler(auth: AuthManager):
+def task_exception_handler(auth: AuthManager):
     try:
         start_ts = DateTimeUtil.get_now()
         api = auth.login()
@@ -74,4 +78,26 @@ def api_exception_handler(auth: AuthManager):
     except Exception as e:
         auth.check_login_status()
         logger.exception(e)
+        raise
+
+
+@contextmanager
+def api_exception_handler():
+    try:
+        yield
+    except (ConnectionError, socket.timeout) as e:
+        pass
+    except PyiCloudAPIResponseException as e:
+        if DEBUG:
+            logger.exception(e)
+        if "Gone (410)" in str(e):
+            logger.info("Gone（410）happened.")
+            raise GoneException()
+        elif "Invalid global session" in str(e):
+            raise NeedLoginAgainException()
+        elif "private db access disabled for this account" in str(e):
+            raise ApiLimitException()
+        else:
+            raise
+    except Exception as e:
         raise

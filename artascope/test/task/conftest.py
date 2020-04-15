@@ -7,17 +7,10 @@ import tempfile
 from pathlib import Path
 import http.cookiejar as cookielib
 from collections import namedtuple
-from pyicloud.services.photos import (
-    PhotoAsset,
-    PhotoAlbum,
-)
-from artascope.src.lib.auth_manager import (
-    AuthManager,
-    LoginStatus,
-)
+from pyicloud.services.photos import PhotoAlbum
+from artascope.src.lib.auth_manager import AuthManager
 from artascope.src.lib.user_config_manager import ucm
 from artascope.src.model.user_config import UserConfig
-from artascope.test.conftest import MOCK_PHOTO_DATA
 
 COOKIE = namedtuple("Cookie", ["name", "path", "domain"])
 

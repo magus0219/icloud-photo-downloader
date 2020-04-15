@@ -10,11 +10,10 @@ from pathlib import Path
 from pyicloud.exceptions import PyiCloudAPIResponseException
 from artascope.src.util.prefix_redis import PrefixRedis
 from artascope.src.config import REDIS_CONFIG
-from artascope.src.util.slack_sender import send_message
+from artascope.src.lib.msg_manager import MsgManager
 from artascope.src.util import get_logger
 from artascope.src.patch.pyicloud import patch_session
 from artascope.src.lib.user_config_manager import ucm
-from artascope.src.model.user_config import NotifyType
 from artascope.src.exception import (
     UserConfigNotExisted,
     APINotExisted,
@@ -38,7 +37,7 @@ LoginStatusText = {
     LoginStatus.NOT_LOGIN: "Not Login",
     LoginStatus.NEED_LOGIN_AGAIN: "Need login again",
     LoginStatus.CAPTCHA_SENT: "Captcha Sent",
-    LoginStatus.CAPTCHA_RECEIVED: "Captcha Pass",
+    LoginStatus.CAPTCHA_RECEIVED: "Captcha Received",
     LoginStatus.CAPTCHA_WRONG: "Captcha Fail",
 }
 
@@ -162,7 +161,7 @@ class AuthManager:
         self.set_captcha(captcha)
         self.set_login_status(LoginStatus.CAPTCHA_RECEIVED)
 
-    def send_captcha(self, notify_type=None) -> None:
+    def send_captcha(self) -> None:
         if self.get_login_status() not in (
             LoginStatus.NOT_LOGIN,
             LoginStatus.NEED_LOGIN_AGAIN,
@@ -186,13 +185,14 @@ class AuthManager:
         rlt = self._icloud_api.send_verification_code(device)
         logger.debug("send_verification_code:{}".format(str(rlt)))
         self.set_login_status(LoginStatus.CAPTCHA_SENT)
-        if notify_type == NotifyType.SLACK:
-            user_setting = ucm.load(self._username)
-            send_message.delay(
-                msg="Goto {url_prefix}/user/captcha/<username> to enter your icloud HSA captcha!".format(
-                    url_prefix=user_setting.admin_url_prefix, username=self._username
-                ),
-            )
+
+        user_setting = ucm.load(self._username)
+        MsgManager.send_message(
+            username=self._username,
+            msg="Goto {url_prefix}/user/captcha/{username} to enter your icloud HSA captcha!".format(
+                url_prefix=user_setting.admin_url_prefix, username=self._username
+            ),
+        )
 
     def prepare_to_login_again(self) -> None:
         self.set_login_status(LoginStatus.NEED_LOGIN_AGAIN)
