@@ -28,7 +28,7 @@ services:
     container_name: artascope_celery_worker_main
     restart: always
     environment:
-      - C_FORCE_ROOT
+      - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
       - TZ=Asia/Shanghai
     command: ["celery_worker_main"]
@@ -40,7 +40,7 @@ services:
     container_name: artascope_celery_worker_upload
     restart: always
     environment:
-      - C_FORCE_ROOT
+      - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
       - TZ=Asia/Shanghai
     command: ["celery_worker_upload"]
@@ -52,7 +52,7 @@ services:
     container_name: artascope_celery_worker_msg
     restart: always
     environment:
-      - C_FORCE_ROOT
+      - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
       - TZ=Asia/Shanghai
     command: ["celery_worker_msg"]
@@ -64,7 +64,7 @@ services:
     container_name: artascope_celery_flower
     restart: always
     environment:
-      - C_FORCE_ROOT
+      - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
       - TZ=Asia/Shanghai
     ports:
