@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+  redis:
+    image: redis:5.0.6
+    container_name: artascope_redis
+    restart: unless-stopped
+    volumes:
+      - artascope-redis:/data
+
+  web:
+    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    container_name: artascope_web
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    ports:
+      - "${ARTASCOPE_WEB_PORT}:16666"
+    command: ["web"]
+    depends_on:
+      - redis
+
+  celery:
+    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    container_name: artascope_celery
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    command: ["celery"]
+    depends_on:
+      - redis
+
+volumes:
+  artascope-redis:
+
+networks:
+  artascope-net:

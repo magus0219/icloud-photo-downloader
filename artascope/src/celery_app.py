@@ -14,8 +14,8 @@ logger = get_logger("server.celery")
 
 app = Celery(
     "artascope",
-    broker="redis://{host}:{port}".format(**REDIS_CONFIG),
-    backend="redis://{host}:{port}".format(**REDIS_CONFIG),
+    broker="redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
+    backend="redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
     include=[
         "artascope.src.util.slack_sender",
         "artascope.src.task.downloader",

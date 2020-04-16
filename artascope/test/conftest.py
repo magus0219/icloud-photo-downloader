@@ -114,6 +114,8 @@ def pytest_runtest_setup():
 @pytest.fixture(scope="session")
 def celery_config():
     return {
+        "broker_url": "redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
+        "result_backend": "redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
         "timezone": TIMEZONE,
         "result_expires": 3600,
         "task_serializer": "pickle",
