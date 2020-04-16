@@ -160,15 +160,20 @@ class TestTaskManager:
             task_name="task_name", username="username", run_type=TaskRunType.ALL,
         )
         tm.add_file_status("task_name", photo_asset)
+
+        file_loaded = tm.load_file_status(photo_asset.id)
+        assert file_loaded.done is False
         tm.finish_file_status("task_name", photo_asset)
         file_loaded = tm.load_file_status(photo_asset.id)
         assert file_loaded.status == 100
         assert tm.load_task("task_name").cnt_done == 1
+        assert file_loaded.done is True
 
         tm.finish_file_status("task_name", photo_asset)
         file_loaded = tm.load_file_status(photo_asset.id)
         assert file_loaded.status == 100
         assert tm.load_task("task_name").cnt_done == 1
+        assert file_loaded.done is True
 
     def test_get_file_status_list(self, photo_asset, photo_asset2):
         tm.add_file_status("task_name", photo_asset)

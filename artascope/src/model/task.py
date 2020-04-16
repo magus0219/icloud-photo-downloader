@@ -7,12 +7,13 @@ from artascope.src.util.date_util import DateUtil
 
 
 class FileStatus(JsonDataMixin):
-    def __init__(self, file_id, filename, size, created_ts, status=0):
+    def __init__(self, file_id, filename, size, created_ts, status=0, done=False):
         self.file_id = file_id
         self.filename = filename
         self.size = size
         self.created_ts = created_ts
         self.status = status
+        self.done = done
 
 
 class TaskStatus:
