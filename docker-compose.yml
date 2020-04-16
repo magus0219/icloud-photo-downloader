@@ -34,6 +34,8 @@ services:
     command: ["celery_worker_main"]
     depends_on:
       - redis
+    volumes:
+      - artascope-tmp:/tmp
 
   celery_worker_upload:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
@@ -46,6 +48,8 @@ services:
     command: ["celery_worker_upload"]
     depends_on:
       - redis
+    volumes:
+      - artascope-tmp:/tmp
 
   celery_worker_msg:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
@@ -75,6 +79,7 @@ services:
 
 volumes:
   artascope-redis:
+  artascope-tmp:
 
 networks:
   artascope-net:
