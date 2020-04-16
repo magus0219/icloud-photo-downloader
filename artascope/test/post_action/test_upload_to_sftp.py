@@ -25,6 +25,9 @@ class MockSSHClient:
     def open_sftp(self):
         return MockSFTPClient()
 
+    def close(self):
+        return True
+
 
 class MockSFTPClient:
     def __init__(self):
