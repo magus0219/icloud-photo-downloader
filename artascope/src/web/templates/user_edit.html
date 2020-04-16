@@ -128,6 +128,49 @@
                 </div>
             </div>
         </div>
+        <div class="card col-md-6">
+            <div class="card-body">
+                <p>
+                <div class="card-title form-check">
+                    {% set checked='checked' if user_setting.notify_type==2 else "" %}
+                    <input class="form-check-input" type="radio" name="notify_type" id="Email" value=2 {{ checked }}>
+                    <label class="form-check-label" for="Email">
+                        Email through SMTP-SSL
+                    </label>
+                </div>
+                </p>
+                <div class="form-group">
+                    <label for="smtpHost">SMTP Host</label>
+                    {% set smtp_host=user_setting.smtp_host if user_setting else "" %}
+                    <input type="text" class="form-control" id="smtpHost" name="smtp_host" value="{{ smtp_host }}" placeholder="smtp.google.com">
+                </div>
+                <div class="form-group">
+                    <label for="smtpPort">SMTP Port</label>
+                    {% set smtp_port=user_setting.smtp_port if user_setting else "" %}
+                    <input type="text" class="form-control" id="smtpPort" name="smtp_port" value="{{ smtp_port }}" placeholder="465">
+                </div>
+                <div class="form-group">
+                    <label for="smtpUser">SMTP Username</label>
+                    {% set smtp_user=user_setting.smtp_user if user_setting else "" %}
+                    <input type="text" class="form-control" id="smtpUser" name="smtp_user" value="{{ smtp_user }}" placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label for="smtpPassword">SMTP Password</label>
+                    {% set smtp_password=user_setting.smtp_password if user_setting else "" %}
+                    <input type="text" class="form-control" id="smtpPassword" name="smtp_password" value="{{ smtp_password }}" placeholder="password">
+                </div>
+                <div class="form-group">
+                    <label for="msgFrom">Email From</label>
+                    {% set msg_from=user_setting.msg_from if user_setting else "" %}
+                    <input type="text" class="form-control" id="msgFrom" name="msg_from" value="{{ msg_from }}" placeholder="from@google.com">
+                </div>
+                <div class="form-group">
+                    <label for="msgTo">Email To(support list delimiter by ;)</label>
+                    {% set msg_to=user_setting.msg_to if user_setting else "" %}
+                    <input type="text" class="form-control" id="msgTo" name="msg_to" value="{{ msg_to }}" placeholder="to@google.com">
+                </div>
+            </div>
+        </div>
         <hr class="my-4">
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

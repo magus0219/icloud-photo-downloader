@@ -5,6 +5,7 @@
 from artascope.src.lib.user_config_manager import ucm
 from artascope.src.model.user_config import NotifyType
 from artascope.src.util.slack_sender import send_message as send_slack_message
+from artascope.src.util.email_sender import send_message as send_email_message
 
 
 class MsgManager:
@@ -24,4 +25,11 @@ class MsgManager:
                     msg=msg,
                 )
             elif notify_type == NotifyType.EMAIL:
-                pass
+                send_email_message.delay(
+                    smtp_host=user_setting.smtp_host,
+                    smtp_port=user_setting.smtp_port,
+                    smtp_user=user_setting.smtp_user,
+                    smtp_password=user_setting.smtp_password,
+                    msg_from=user_setting.msg_from,
+                    msg_to=user_setting.msg_to.split(";"),
+                )

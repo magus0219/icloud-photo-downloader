@@ -13,6 +13,7 @@ REDIS_SLACK_MSG_EXPIRE = 3600
 REDIS_CONFIG = {
     "host": "localhost",
     "port": 6379,
+    "db": 0,
 }
 
 USER_PASSWORD_MAP = {"magus0219@gmail.com": "LiuNian871209"}

@@ -20,7 +20,7 @@ redis = PrefixRedis("slack", **REDIS_CONFIG)
 def get_msg_block(channel_id, msg):
     return {
         "channel": channel_id,
-        "text": msg.split("...")[0],
+        "text": msg.split("\n")[0],
         "blocks": [
             {"type": "context", "elements": [{"type": "mrkdwn", "text": msg}]},
             {"type": "divider"},
@@ -44,7 +44,7 @@ def get_channel_id(client: slack.WebClient, channel: str = "dev"):
     return channel_id
 
 
-@celery_app.task(retry=True)
+@celery_app.task(autoretry_for=(Exception,), retry_kwargs={"max_retries": 5})
 def send_message(
     token: str,
     msg: str,

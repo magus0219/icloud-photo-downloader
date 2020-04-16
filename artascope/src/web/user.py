@@ -53,22 +53,12 @@ def user_edit(username=None):
                 data["account_username"], data["account_password"]
             )
 
-        user_setting.icloud_password = data["account_password"]
-        user_setting.admin_url_prefix = data["admin_url_prefix"]
-
-        if int(data["target"]) == TargetType.SFTP:
-            user_setting.set_target_sftp(
-                host=data["sftp_host"],
-                port=int(data["sftp_port"]),
-                username=data["sftp_username"],
-                password=data["sftp_password"],
-                sftp_dir=data["sftp_dir"],
-            )
-
-        if int(data["notify_type"]) == NotifyType.SLACK:
-            user_setting.set_nofity_slack(
-                slack_token=data["slack_token"], slack_channel=data["slack_channel"]
-            )
+        for key, value in user_setting.__dict__.items():
+            if key in data and data[key] is not None:
+                if key in ("target_type", "notify_type", "sftp_port", "smtp_port"):
+                    setattr(user_setting, key, int(data[key]))
+                else:
+                    setattr(user_setting, key, data[key])
         ucm.save(user_setting)
         return redirect(url_for("user.user"))
 

@@ -3,6 +3,7 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/6
 import pytest
+import copy
 from artascope.src.lib.user_config_manager import ucm
 from artascope.src.model.user_config import UserConfig
 from artascope.src.lib.auth_manager import (
@@ -28,6 +29,12 @@ MOCK_NEW_USER = {
     "notify_type": "1",
     "slack_token": "abcdefg",
     "slack_channel": "dev",
+    "smtp_host": "mail.google.com",
+    "smtp_port": "456",
+    "smtp_user": "user",
+    "smtp_password": "password",
+    "msg_from": "msg_from",
+    "msg_to": "msg_to1;msg_to2",
 }
 
 
@@ -83,8 +90,17 @@ class TestUser:
             b'<input class="form-check-input" type="radio" name="notify_type" id="None" value=0 checked>'
             in response.data
         )
+        assert (
+            b'<input class="form-check-input" type="radio" name="notify_type" id="Slack" value=1 >'
+            in response.data
+        )
+        assert (
+            b'<input class="form-check-input" type="radio" name="notify_type" id="Email" value=2 >'
+            in response.data
+        )
 
     def test_user_edit_add_new_user(self, client, response):
+        # redirect to user list
         # test info
         assert b"User List" in response.data  # test jumbotron
         assert b"<td>1</td>" in response.data
@@ -100,6 +116,8 @@ class TestUser:
     def test_user_edit_get_exsited_user(self, client, response):
         response = client.get("/user/edit/{}".format(MOCK_NEW_USER["account_username"]))
         assert b"Edit User Setting" in response.data  # test jumbotron
+        print(response.data)
+
         assert (
             "of {}".format(MOCK_NEW_USER["account_username"]).encode() in response.data
         )  # test jumbotron
@@ -170,6 +188,42 @@ class TestUser:
         assert (
             '<input type="text" class="form-control" id="slackChannel" name="slack_channel" value="{}"'.format(
                 MOCK_NEW_USER["slack_channel"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="smtpHost" name="smtp_host" value="{}"'.format(
+                MOCK_NEW_USER["smtp_host"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="smtpPort" name="smtp_port" value="{}"'.format(
+                MOCK_NEW_USER["smtp_port"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="smtpUser" name="smtp_user" value="{}"'.format(
+                MOCK_NEW_USER["smtp_user"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="smtpPassword" name="smtp_password" value="{}"'.format(
+                MOCK_NEW_USER["smtp_password"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="msgFrom" name="msg_from" value="{}"'.format(
+                MOCK_NEW_USER["msg_from"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="msgTo" name="msg_to" value="{}"'.format(
+                MOCK_NEW_USER["msg_to"]
             ).encode()
             in response.data
         )

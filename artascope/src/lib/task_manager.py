@@ -89,8 +89,8 @@ class TaskManager:
 
         MsgManager.send_message(
             username=task.username,
-            msg="Sync Task[{task_name}] of User [{user}] failed!".format(
-                task_name=task.task_name, user=task.username
+            msg="Sync Task[{task_name}] of User [{user}] failed!\n{content}".format(
+                task_name=task.task_name, user=task.username, content=str(task)
             ),
         )
 
@@ -112,8 +112,8 @@ class TaskManager:
 
         MsgManager.send_message(
             username=task.username,
-            msg="Sync Task[{task_name}] of User [{user}] succeeded!".format(
-                task_name=task.task_name, user=task.username
+            msg="Sync Task[{task_name}] of User [{user}] succeeded!\n{content}".format(
+                task_name=task.task_name, user=task.username, content=str(task)
             ),
         )
 
@@ -168,8 +168,8 @@ class TaskManager:
 
         MsgManager.send_message(
             username=task.username,
-            msg="Sync Task[{task_name}] of User [{user}] started!".format(
-                task_name=task.task_name, user=task.username
+            msg="Sync Task[{task_name}] of User [{user}] started!\n{content}".format(
+                task_name=task.task_name, user=task.username, content=str(task)
             ),
         )
 

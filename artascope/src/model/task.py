@@ -3,6 +3,7 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/3/30
 from artascope.src.model.mixin import JsonDataMixin
+from artascope.src.util.date_util import DateUtil
 
 
 class FileStatus(JsonDataMixin):
@@ -64,3 +65,19 @@ class TaskInfo(JsonDataMixin):
         self.last = last
         self.date_start = date_start
         self.date_end = date_end
+
+    def __str__(self):
+        return "run_type:{run_type}, last:{last}, date_start:{date_start} date_end:{date_end}".format(
+            run_type=TaskRunTypeText[self.run_type],
+            last=self.last if self.last else "",
+            date_start=DateUtil.get_str_from_date(
+                DateUtil.get_date_from_timestamp(self.date_start)
+            )
+            if self.date_start
+            else "",
+            date_end=DateUtil.get_str_from_date(
+                DateUtil.get_date_from_timestamp(self.date_end)
+            )
+            if self.date_end
+            else "",
+        )
