@@ -5,6 +5,7 @@
 REDIS_CONFIG = {
     "host": "redis",
     "port": 6379,
+    "db": 0,
 }
 
 API_LATCH_LIMIT_PER_MINUTE = 30
