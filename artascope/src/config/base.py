@@ -5,9 +5,6 @@
 ENV = ""  # will be set auto as filepath in __init__
 DEBUG = True
 
-SLACK_TOKEN = (
-    "xoxp-788823341621-776039979922-783917865361-5c7a03623068530dd3307507b067b459"
-)
 REDIS_SLACK_MSG_EXPIRE = 3600
 
 REDIS_CONFIG = {
@@ -15,16 +12,6 @@ REDIS_CONFIG = {
     "port": 6379,
     "db": 0,
 }
-
-USER_PASSWORD_MAP = {"magus0219@gmail.com": "LiuNian871209"}
-
-TARGET = {
-    "hostname": "192.168.50.118",
-    "port": 2224,
-    "username": "magus0219",
-    "password": "boena0219",
-}
-TARGET_DIR = "Drive/Moments/Mobile/iphone"
 
 BATCH_CNT = 200
 

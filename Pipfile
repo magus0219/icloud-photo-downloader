@@ -20,6 +20,7 @@ slackclient = "*"
 celery = "*"
 flask = "*"
 gunicorn = "*"
+flower = "*"
 
 [requires]
 python_version = "3.7"

@@ -235,9 +235,10 @@ class TaskManager:
 
     def finish_file_status(self, task_name: str, file: PhotoAsset) -> None:
         fs = self.load_file_status(file.id)
-        fs.status = 100
-        self.save_file_status(fs)
-        self.incr_task_done(task_name)
+        if fs.status < 100:
+            fs.status = 100
+            self.save_file_status(fs)
+            self.incr_task_done(task_name)
 
     def get_file_status_list(self, task_name: str) -> typing.List[FileStatus]:
         rlt = []

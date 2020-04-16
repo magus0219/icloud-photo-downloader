@@ -19,15 +19,53 @@ services:
     command: ["web"]
     depends_on:
       - redis
+      - celery_worker_main
+      - celery_worker_upload
+      - celery_worker_msg
 
-  celery:
+  celery_worker_main:
     image: nas.magicqin.com:5555/magicqin/artascope:latest
     container_name: artascope_celery
     restart: always
     environment:
       - ARTASCOPE_ENV
       - TZ=Asia/Shanghai
-    command: ["celery"]
+    command: ["celery_worker_main"]
+    depends_on:
+      - redis
+
+  celery_worker_upload:
+    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    container_name: artascope_celery
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    command: ["celery_worker_upload"]
+    depends_on:
+      - redis
+
+  celery_worker_msg:
+    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    container_name: artascope_celery
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    command: ["celery_worker_msg"]
+    depends_on:
+      - redis
+
+  celery_flower:
+    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    container_name: artascope_celery
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    ports:
+      - "${ARTASCOPE_FLOWER_PORT}:5555"
+    command: ["celery_flower"]
     depends_on:
       - redis
 

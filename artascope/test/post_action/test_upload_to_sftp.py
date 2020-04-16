@@ -68,12 +68,13 @@ def tgt_tempdir(request):
 
 class TestSFTP:
     def test_upload_to_sftp(self, tgt_tempdir, monkeypatch):
-        uc = UserConfig(icloud_username="username", icloud_password="password",)
-        uc.set_target_sftp(
-            host="127.0.0.1",
-            port=1000,
-            username="sftp_username",
-            password="sftp_password",
+        uc = UserConfig(
+            icloud_username="username",
+            icloud_password="password",
+            sftp_host="127.0.0.1",
+            sftp_port=1000,
+            sftp_username="sftp_username",
+            sftp_password="sftp_password",
             sftp_dir=str(tgt_tempdir),
         )
         ucm.save(uc)

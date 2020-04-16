@@ -12,10 +12,28 @@ if [[ "$1" = 'web' ]]; then
 	gunicorn -w 2 -b 0.0.0.0:16666 artascope.src.wsgi:app
 fi
 
-if [[ "$1" = 'celery' ]]; then
-	# start celery worker
-	echo "start celery worker"
-	celery -A artascope.src.celery_app worker -E --loglevel=info
+if [[ "$1" = 'celery_worker_main' ]]; then
+	# start celery worker_main
+	echo "start celery worker_main"
+	celery -A artascope.src.celery_app worker -Q default -n worker_main@%%h -E --loglevel=info --pidfile=/var/run/celery/%n.pid --max-tasks-per-child=100
+fi
+
+if [[ "$1" = 'celery_worker_msg' ]]; then
+	# start celery worker_msg
+	echo "start celery worker_msg"
+	celery -A artascope.src.celery_app worker -c1 -Q msg -n worker_msg@%%h -E --loglevel=info --pidfile=/var/run/celery/%n.pid --max-tasks-per-child=100
+fi
+
+if [[ "$1" = 'celery_worker_upload' ]]; then
+	# start celery worker_upload
+	echo "start celery worker_upload"
+	celery -A artascope.src.celery_app worker -c1 -Q upload -n worker_upload@%%h -E --loglevel=info --pidfile=/var/run/celery/%n.pid --max-tasks-per-child=100
+fi
+
+if [[ "$1" = 'celery_flower' ]]; then
+	# start celery worker_upload
+	echo "start celery worker_upload"
+	celery -A artascope.src.celery_app flower --port=5555
 fi
 
 if [[ "$1" = 'beat' ]]; then

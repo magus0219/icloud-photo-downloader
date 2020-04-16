@@ -36,7 +36,8 @@ deploy_stage:
     - docker-compose up -d
   variables:
     ARTASCOPE_ENV: staging
-    ARTASCOPE_WEB_PORT: 16666
+    ARTASCOPE_WEB_PORT: 31100
+    ARTASCOPE_FLOWER_PORT: 31101
   environment:
     name: staging
   when: manual

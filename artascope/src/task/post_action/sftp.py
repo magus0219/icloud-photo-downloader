@@ -57,9 +57,9 @@ def upload_to_sftp(
         )
     )
 
+    ssh_client = paramiko.client.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
     try:
-        ssh_client = paramiko.client.SSHClient()
-        ssh_client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy)
         ssh_client.connect(
             hostname=user_setting.sftp_host,
             port=user_setting.sftp_port,
@@ -72,7 +72,6 @@ def upload_to_sftp(
             sftp_client.chdir(user_setting.sftp_dir)
         except FileNotFoundError:
             for part in Path(user_setting.sftp_dir).parts:
-                print("part", part)
                 try:
                     sftp_client.mkdir(part)
                     sftp_client.chdir(part)
@@ -97,3 +96,5 @@ def upload_to_sftp(
     except Exception as e:
         logger.exception(e)
         raise
+    finally:
+        ssh_client.close()

@@ -42,9 +42,9 @@ app.conf.update(
 )
 
 app.conf.beat_schedule = {
-    "add-every-monday-morning": {
-        "task": "bugsbunny.src.etl.job.future_update_info",
-        "schedule": crontab(hour=20, minute=22),
-        "args": (),
+    "download-after-midnight": {
+        "task": "artascope.src.task.sync",
+        "schedule": crontab(hour=16, minute=30),
+        "kwargs": {},
     }
 }
