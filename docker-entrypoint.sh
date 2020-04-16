@@ -15,7 +15,7 @@ fi
 if [[ "$1" = 'celery_worker_main' ]]; then
 	# start celery worker_main
 	echo "start celery worker_main"
-	celery -A artascope.src.celery_app worker -Q default -n worker_main -E --loglevel=info --pidfile=/var/run/%n.pid --max-tasks-per-child=100
+	celery -A artascope.src.celery_app worker -n worker_main -E --loglevel=info --pidfile=/var/run/%n.pid --max-tasks-per-child=100
 fi
 
 if [[ "$1" = 'celery_worker_msg' ]]; then
@@ -27,7 +27,7 @@ fi
 if [[ "$1" = 'celery_worker_upload' ]]; then
 	# start celery worker_upload
 	echo "start celery worker_upload"
-	celery -A artascope.src.celery_app worker -c1 -Q upload -n worker_upload-E --loglevel=info --pidfile=/var/run/%n.pid --max-tasks-per-child=100
+	celery -A artascope.src.celery_app worker -c1 -Q upload -n worker_upload -E --loglevel=info --pidfile=/var/run/%n.pid --max-tasks-per-child=100
 fi
 
 if [[ "$1" = 'celery_flower' ]]; then
