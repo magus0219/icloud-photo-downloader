@@ -54,7 +54,7 @@ def user_edit(username=None):
             )
 
         for key, value in user_setting.__dict__.items():
-            if key in data and data[key] != "None":
+            if key in data and data[key] not in ("None", ""):
                 if key in ("target_type", "notify_type", "sftp_port", "smtp_port"):
                     setattr(user_setting, key, int(data[key]))
                 else:
