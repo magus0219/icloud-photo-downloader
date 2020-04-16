@@ -8,7 +8,7 @@ services:
       - artascope-redis:/data
 
   web:
-    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
     container_name: artascope_web
     restart: always
     environment:
@@ -24,7 +24,7 @@ services:
       - celery_worker_msg
 
   celery_worker_main:
-    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery
     restart: always
     environment:
@@ -35,7 +35,7 @@ services:
       - redis
 
   celery_worker_upload:
-    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery
     restart: always
     environment:
@@ -46,7 +46,7 @@ services:
       - redis
 
   celery_worker_msg:
-    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery
     restart: always
     environment:
@@ -57,7 +57,7 @@ services:
       - redis
 
   celery_flower:
-    image: nas.magicqin.com:5555/magicqin/artascope:latest
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery
     restart: always
     environment:
