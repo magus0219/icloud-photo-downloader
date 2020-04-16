@@ -8,6 +8,8 @@ REDIS_CONFIG = {
     "db": 0,
 }
 
+API_FILE_DOWNLOAD_CHUNK_SIZE = 8192 * 2
+
 LOG_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
