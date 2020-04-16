@@ -25,7 +25,7 @@ services:
 
   celery_worker_main:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
-    container_name: artascope_celery
+    container_name: artascope_celery_worker_main
     restart: always
     environment:
       - ARTASCOPE_ENV
@@ -36,7 +36,7 @@ services:
 
   celery_worker_upload:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
-    container_name: artascope_celery
+    container_name: artascope_celery_worker_upload
     restart: always
     environment:
       - ARTASCOPE_ENV
@@ -47,7 +47,7 @@ services:
 
   celery_worker_msg:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
-    container_name: artascope_celery
+    container_name: artascope_celery_worker_msg
     restart: always
     environment:
       - ARTASCOPE_ENV
@@ -58,7 +58,7 @@ services:
 
   celery_flower:
     image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
-    container_name: artascope_celery
+    container_name: artascope_celery_flower
     restart: always
     environment:
       - ARTASCOPE_ENV
