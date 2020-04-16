@@ -60,35 +60,3 @@ class UserConfig(JsonDataMixin):
         self.smtp_password = smtp_password
         self.msg_from = msg_from
         self.msg_to = msg_to
-
-    def set_target_sftp(
-        self, host: str, port: int, username: str, password: str, sftp_dir: str
-    ) -> None:
-        self.target_type = TargetType.SFTP
-        self.sftp_host = host
-        self.sftp_port = port
-        self.sftp_username = username
-        self.sftp_password = password
-        self.sftp_dir = sftp_dir
-
-    def set_nofity_slack(self, slack_token: str, slack_channel: str):
-        self.notify_type = NotifyType.SLACK
-        self.slack_token = slack_token
-        self.slack_channel = slack_channel
-
-    def set_notify_email(
-        self,
-        smtp_host: str,
-        smtp_port: int,
-        smtp_user: str,
-        smtp_password: str,
-        msg_from: str,
-        msg_to: List[str],
-    ):
-        self.notify_type = NotifyType.EMAIL
-        self.smtp_host = smtp_host
-        self.smtp_port = smtp_port
-        self.smtp_user = smtp_user
-        self.smtp_password = smtp_password
-        self.msg_from = msg_from
-        self.msg_to = msg_to
