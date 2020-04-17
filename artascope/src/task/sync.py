@@ -72,20 +72,6 @@ def get_task_name(
             if date_end
             else None,
         )
-
-    task_name = uuid.uuid4().hex
-    tm.add_task(
-        task_name=task_name,
-        username=username,
-        run_type=decide_run_type(last, date_start, date_end),
-        last=last,
-        date_start=DateTimeUtil.get_datetime_from_date(date_start).timestamp()
-        if date_start
-        else None,
-        date_end=DateTimeUtil.get_datetime_from_date(date_end).timestamp()
-        if date_end
-        else None,
-    )
     return task_name
 
 
