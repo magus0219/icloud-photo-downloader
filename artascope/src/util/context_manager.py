@@ -58,6 +58,7 @@ def task_exception_handler(auth: AuthManager):
         raise
     except UnableToSendCaptchaException as e:
         logger.info("something is wrong")
+        auth.prepare_to_login_again()
         raise
     except NeedLoginAgainException as e:
         logger.info("need login again")
