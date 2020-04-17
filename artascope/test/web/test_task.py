@@ -177,7 +177,6 @@ class TestTask:
                 date_start: datetime.date = None,
                 date_end: datetime.date = None,
             ):
-                print(last, date_start, date_end)
                 raise DataException(
                     {"last": last, "date_start": date_start, "date_end": date_end}
                 )

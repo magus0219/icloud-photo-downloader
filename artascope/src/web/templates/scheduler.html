@@ -1,0 +1,35 @@
+{% extends "lib/base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Artascope</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/task">Task</a>
+            <a class="nav-item nav-link" href="/user">User</a>
+            <a class="nav-item nav-link active" href="/scheduler">Scheduler</a>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron .bg-transparent">
+    <h1 class="display-4">Scheduler Jobs</h1>
+    <p class="lead">
+        Jobs in Scheduler
+    </p>
+</div>
+<div>
+    <table class="table">
+        <tr>
+            <th>Info</th>
+        </tr>
+        {% for one_job in job_info %}
+        <tr>
+            <td>{{ one_job }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

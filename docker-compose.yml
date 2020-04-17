@@ -77,6 +77,18 @@ services:
     depends_on:
       - redis
 
+  scheduler:
+    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    container_name: artascope_scheduler
+    restart: always
+    environment:
+      - ARTASCOPE_ENV
+      - TZ=Asia/Shanghai
+    command: ["scheduler"]
+    depends_on:
+      - redis
+      - celery_worker_main
+
 volumes:
   artascope-redis:
   artascope-tmp:

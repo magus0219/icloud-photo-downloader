@@ -35,6 +35,9 @@ MOCK_NEW_USER = {
     "smtp_password": "password",
     "msg_from": "msg_from",
     "msg_to": "msg_to1;msg_to2",
+    "scheduler_enable": "1",
+    "scheduler_crontab": "0 1 * * *",
+    "scheduler_last_day_cnt": "3",
 }
 
 
@@ -96,6 +99,10 @@ class TestUser:
         )
         assert (
             b'<input class="form-check-input" type="radio" name="notify_type" id="Email" value=2 >'
+            in response.data
+        )
+        assert (
+            b'<input class="form-check-input" type="radio" name="scheduler_enable" id="SchedulerDisable" value=0 checked>'
             in response.data
         )
 
@@ -224,6 +231,22 @@ class TestUser:
         assert (
             '<input type="text" class="form-control" id="msgTo" name="msg_to" value="{}"'.format(
                 MOCK_NEW_USER["msg_to"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            b'<input class="form-check-input" type="radio" name="scheduler_enable" id="SchedulerEnable" value=1 checked>'
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="SchedulerCron" name="scheduler_crontab" value="{}"'.format(
+                MOCK_NEW_USER["scheduler_crontab"]
+            ).encode()
+            in response.data
+        )
+        assert (
+            '<input type="text" class="form-control" id="SchedulerLastDayCnt" name="scheduler_last_day_cnt" value="{}"'.format(
+                MOCK_NEW_USER["scheduler_last_day_cnt"]
             ).encode()
             in response.data
         )

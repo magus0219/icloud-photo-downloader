@@ -36,10 +36,10 @@ if [[ "$1" = 'celery_flower' ]]; then
 	celery -A artascope.src.celery_app flower --port=5555
 fi
 
-if [[ "$1" = 'beat' ]]; then
+if [[ "$1" = 'scheduler' ]]; then
 	# start celery beat
-	echo "start celery beat"
-	celery -A artascope.src.celery_app beat --loglevel=info
+	echo "start scheduler"
+	python artascope/src/script/scheduler.py
 fi
 
 if [[ "$1" = 'test' ]]; then

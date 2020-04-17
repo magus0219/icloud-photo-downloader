@@ -11,18 +11,12 @@ from flask import (
 )
 from artascope.src.lib.user_status_manager import usm
 from artascope.src.lib.user_config_manager import ucm
+from artascope.src.lib.scheduler_manager import sm
 from artascope.src.lib.auth_manager import (
     AuthManager,
     LoginStatusText,
 )
-from artascope.src.model.user_config import (
-    TargetType,
-    UserConfig,
-    NotifyType,
-)
-from artascope.src.lib.task_manager import tm
-from artascope.src.task.sync import sync
-from artascope.src.util.date_util import DateUtil
+from artascope.src.model.user_config import UserConfig
 
 
 bp = Blueprint("user", __name__, url_prefix="/user")
@@ -55,11 +49,19 @@ def user_edit(username=None):
 
         for key, value in user_setting.__dict__.items():
             if key in data and data[key] not in ("None", ""):
-                if key in ("target_type", "notify_type", "sftp_port", "smtp_port"):
+                if key in (
+                    "target_type",
+                    "notify_type",
+                    "sftp_port",
+                    "smtp_port",
+                    "scheduler_enable",
+                    "scheduler_last_day_cnt",
+                ):
                     setattr(user_setting, key, int(data[key]))
                 else:
                     setattr(user_setting, key, data[key])
         ucm.save(user_setting)
+        sm.add_user(username=user_setting.icloud_username)
         return redirect(url_for("user.user"))
 
 

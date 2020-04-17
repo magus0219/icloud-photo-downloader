@@ -21,6 +21,7 @@ celery = "*"
 flask = "*"
 gunicorn = "*"
 flower = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.7"

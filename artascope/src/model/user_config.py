@@ -16,19 +16,24 @@ class TargetType:
     SFTP = 1
 
 
+class SchedulerEnable:
+    Disable = 0
+    Enable = 1
+
+
 class UserConfig(JsonDataMixin):
     def __init__(
         self,
         icloud_username: str,
         icloud_password: str,
-        target_type: int = None,
+        target_type: int = TargetType.SFTP,
         sftp_host: str = None,
         sftp_port: int = None,
         sftp_username: str = None,
         sftp_password: str = None,
         sftp_dir: str = None,
         admin_url_prefix: str = None,
-        notify_type: int = None,
+        notify_type: int = NotifyType.NONE,
         slack_token: str = None,
         slack_channel: str = None,
         smtp_host: str = None,
@@ -37,6 +42,9 @@ class UserConfig(JsonDataMixin):
         smtp_password: str = None,
         msg_from: str = None,
         msg_to: str = None,
+        scheduler_enable: int = SchedulerEnable.Disable,
+        scheduler_crontab: str = None,
+        scheduler_last_day_cnt: int = None,
     ):
         self.icloud_username = icloud_username
         self.icloud_password = icloud_password
@@ -50,7 +58,9 @@ class UserConfig(JsonDataMixin):
         self.sftp_dir = sftp_dir
 
         self.admin_url_prefix = admin_url_prefix
+
         self.notify_type = notify_type
+
         self.slack_token = slack_token
         self.slack_channel = slack_channel
 
@@ -60,3 +70,7 @@ class UserConfig(JsonDataMixin):
         self.smtp_password = smtp_password
         self.msg_from = msg_from
         self.msg_to = msg_to
+
+        self.scheduler_enable = scheduler_enable
+        self.scheduler_crontab = scheduler_crontab
+        self.scheduler_last_day_cnt = scheduler_last_day_cnt
