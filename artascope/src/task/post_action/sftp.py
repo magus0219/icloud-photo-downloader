@@ -15,24 +15,17 @@ logger = get_logger("server")
 
 
 def modify_meta(
-    sftp_client: paramiko.sftp_client,
-    filepath: str,
-    filename: str,
-    created_dt: datetime.datetime,
+    sftp_client: paramiko.sftp_client, filepath: str, created_dt: datetime.datetime,
 ):
     """Change access and modified times of photo, software like Synology Moments will need it
 
     :param sftp_client:
     :param filepath:
-    :param filename:
     :param created_dt:
     :return:
     """
-    file_type = filename.split(".")[-1].lower()
     created_dt = created_dt.timestamp()
-
-    if file_type in ("png", "jpg", "jepg"):
-        sftp_client.utime(filepath, (created_dt, created_dt))
+    sftp_client.utime(filepath, (created_dt, created_dt))
 
 
 @celery_app.task(
@@ -90,7 +83,7 @@ def upload_to_sftp(
         except FileNotFoundError as e:
             pass
         sftp_client.put(src_filepath, str(tgt_filepath))
-        modify_meta(sftp_client, str(tgt_filepath), filename, created_dt)
+        modify_meta(sftp_client, str(tgt_filepath), created_dt)
 
         os.remove(src_filepath)
     except Exception as e:
