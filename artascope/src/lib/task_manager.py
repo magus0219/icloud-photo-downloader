@@ -216,7 +216,7 @@ class TaskManager:
 
     def load_file_status(
         self, file_id: str
-    ) -> typing.Union[FileStatusNotExisted, TaskStatus]:
+    ) -> typing.Union[FileStatusNotExisted, FileStatus]:
         json_str = self._redis.get(
             "{key}:{file_id}".format(key=FILE_INFO_KEY, file_id=file_id)
         )

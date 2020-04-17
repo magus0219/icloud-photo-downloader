@@ -321,6 +321,28 @@ class TestDownloader:
         for photo in photos:
             assert tm.load_file_status(photo.id).status == 100
 
+    def test_download_dup_photo(
+        self, monkeypatch, set_not_existed_tempdir, photos, mock_login, set_user
+    ):
+        def mock_download_file(photo, filepath, size):
+            # not execute here
+            raise Exception
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.task.downloader"],
+            "download_file",
+            mock_download_file,
+        )
+
+        for photo in photos:
+            fs = tm.load_file_status(photo.id)
+            fs.done = True
+            tm.save_file_status(fs)
+
+        download_photo(
+            task_name="task_name", username="username", batch=photos, offset=2, cnt=3
+        )
+
     def test_download_photo_src_path(self, monkeypatch, photos, mock_login, set_user):
         def mock_download_file(photo, filepath, size):
             raise DataException({"filepath": str(filepath)})

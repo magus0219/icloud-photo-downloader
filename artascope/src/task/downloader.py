@@ -121,35 +121,39 @@ def download_photo(
         while batch:
             try:
                 for photo in batch:
-                    photo._service = photo_service
+                    fs = tm.load_file_status(photo.id)
+                    # download file really needed
+                    if fs.done is False:
+                        photo._service = photo_service
 
-                    logger.info(
-                        "start download photo {name}:{size}".format(
-                            name=photo.filename, size=str(photo.size)
+                        logger.info(
+                            "start download photo {name}:{size}".format(
+                                name=photo.filename, size=str(photo.size)
+                            )
                         )
-                    )
 
-                    if not tempdir.exists():
-                        os.mkdir(tempdir)
-                    filename = "{ts}_{filename}".format(
-                        filename=photo.filename, ts=int(photo.created.timestamp())
-                    )
-                    filepath = tempdir / filename
+                        if not tempdir.exists():
+                            os.mkdir(tempdir)
+                        filename = "{ts}_{filename}".format(
+                            filename=photo.filename, ts=int(photo.created.timestamp())
+                        )
+                        filepath = tempdir / filename
 
-                    download_file(photo, filepath, photo.size)
-                    logger.info("download photo {name} done.".format(name=filename))
+                        download_file(photo, filepath, photo.size)
+                        logger.info("download photo {name} done.".format(name=filename))
 
-                    upload_to_sftp.delay(
-                        username=username,
-                        src_filepath=str(filepath),
-                        filename=photo.filename,
-                        created_dt=photo.created,
-                    )
-                    tm.finish_file_status(task_name, photo)
-                    task = tm.load_task(task_name=task_name)
-                    if task.cnt_done == task.cnt_total:
-                        tm.finish_task(task_name)
-
+                        upload_to_sftp.delay(
+                            username=username,
+                            src_filepath=str(filepath),
+                            filename=photo.filename,
+                            created_dt=photo.created,
+                        )
+                        tm.finish_file_status(task_name, photo)
+                        task = tm.load_task(task_name=task_name)
+                        if task.cnt_done == task.cnt_total:
+                            tm.finish_task(task_name)
+                    else:
+                        pass
                     idx += 1
                 return
             except GoneException as e:
