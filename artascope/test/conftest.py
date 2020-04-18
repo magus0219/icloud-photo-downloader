@@ -23,7 +23,9 @@ MOCK_PHOTO_DATA = [
         "master": {
             "recordName": "record1",
             "fields": {
-                "filenameEnc": {"value": base64.b64encode("filename1".encode("utf8"))},
+                "filenameEnc": {
+                    "value": base64.b64encode("filename1.jpg".encode("utf8"))
+                },
                 "resOriginalRes": {"value": {"size": 258}},
             },
         },
@@ -42,7 +44,9 @@ MOCK_PHOTO_DATA = [
         "master": {
             "recordName": "record2",
             "fields": {
-                "filenameEnc": {"value": base64.b64encode("filename2".encode("utf8"))},
+                "filenameEnc": {
+                    "value": base64.b64encode("filename2.jpg".encode("utf8"))
+                },
                 "resOriginalRes": {"value": {"size": 258}},
             },
         },
@@ -61,7 +65,9 @@ MOCK_PHOTO_DATA = [
         "master": {
             "recordName": "record3",
             "fields": {
-                "filenameEnc": {"value": base64.b64encode("filename3".encode("utf8"))},
+                "filenameEnc": {
+                    "value": base64.b64encode("filename3.jpg".encode("utf8"))
+                },
                 "resOriginalRes": {"value": {"size": 258}},
             },
         },

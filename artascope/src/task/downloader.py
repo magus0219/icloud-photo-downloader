@@ -3,24 +3,18 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/3
 import os
-import socket
 import typing
 import tempfile
-
-from pathlib import Path
-from artascope.src.celery_app import app as celery_app
-from requests.exceptions import ConnectionError
-from pyicloud.exceptions import (
-    PyiCloudAPIResponseException,
-    PyiCloudServiceNotActivatedException,
+from pathlib import (
+    Path,
+    PurePath,
 )
+from artascope.src.celery_app import app as celery_app
 from pyicloud.services.photos import PhotoAsset
 from artascope.src.config import (
-    DEBUG,
     API_FILE_DOWNLOAD_CHUNK_SIZE,
     API_PAGE_SIZE,
 )
-from artascope.src.lib.auth_manager import LoginStatus
 from artascope.src.util import get_logger
 from artascope.src.lib.task_manager import tm
 from artascope.src.patch.pyicloud import (
@@ -30,8 +24,6 @@ from artascope.src.patch.pyicloud import (
 from artascope.src.lib.auth_manager import AuthManager
 from artascope.src.task.post_action.sftp import upload_to_sftp
 from artascope.src.exception import (
-    NeedLoginAgainException,
-    ApiLimitException,
     GoneException,
     LoginTimeoutException,
 )
@@ -145,7 +137,11 @@ def download_photo(
                         upload_to_sftp.delay(
                             username=username,
                             src_filepath=str(filepath),
-                            filename=photo.id,
+                            filename=str(
+                                PurePath(photo.id).with_suffix(
+                                    PurePath(photo.filename).suffix
+                                )
+                            ),
                             created_dt=photo.created,
                         )
                         tm.finish_file_status(task_name, photo)

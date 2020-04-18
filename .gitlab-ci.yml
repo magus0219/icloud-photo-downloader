@@ -45,19 +45,19 @@ deploy_stage:
     - master
 
 deploy_prod:
-  image: nas.magicqin.com:5555/magicqin/birdman/docker:19.03.3-kubectl
+  image: nas.magicqin.com:5555/magicqin/images/docker:19.03.3-kubectl
   stage: deploy
   script:
     - echo $CI_COMMIT_SHA
     - echo $KUBE_URL $KUBE_TOKEN $KUBE_NAMESPACE $KUBECONFIG
     - export KUBECONFIG=$KUBECONFIG
     - echo $KUBECONFIG
-    - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/birdman:$CI_COMMIT_SHA
+    - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/artascope:$CI_COMMIT_SHA
     - echo $NEW_IMAGE
-    - kubectl set image deployment birdman-app birdman-server=$NEW_IMAGE birdman-celery=$NEW_IMAGE birdman-web=$NEW_IMAGE --record -n birdman
+    - kubectl set image deployment birdman-app birdman-server=$NEW_IMAGE birdman-celery=$NEW_IMAGE birdman-web=$NEW_IMAGE --record -n artascope
   variables:
-    BUGSBUNNY_ENV: prod
-    BIRDMAN_WEB_PORT: 16666
+    ARTASCOPE_ENV: prod
+    ARTASCOPE_WEB_PORT: 16666
   environment:
     name: prod
   when: manual

@@ -3,7 +3,6 @@
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/17
 import typing
-import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from artascope.src.util.prefix_redis import PrefixRedis
 from artascope.src.config import REDIS_CONFIG

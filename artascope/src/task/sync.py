@@ -5,7 +5,6 @@
 import datetime
 import uuid
 import pytz
-from pyicloud.exceptions import PyiCloudAPIResponseException
 from artascope.src.celery_app import app as celery_app
 from artascope.src.lib.auth_manager import AuthManager
 from artascope.src.util import get_logger
@@ -13,7 +12,6 @@ from artascope.src.config import (
     BATCH_CNT,
     API_PAGE_SIZE,
     TIMEZONE,
-    DEBUG,
 )
 from artascope.src.lib.task_manager import (
     tm,
@@ -24,11 +22,7 @@ from artascope.src.patch.pyicloud import (
     patch_photo_album,
     patch_photo_asset,
 )
-from artascope.src.exception import (
-    NeedLoginAgainException,
-    ApiLimitException,
-    LoginTimeoutException,
-)
+from artascope.src.exception import LoginTimeoutException
 from artascope.src.util.context_manager import (
     task_exception_handler,
     api_exception_handler,

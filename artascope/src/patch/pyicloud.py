@@ -10,7 +10,6 @@ from pyicloud.services.photos import (
     PhotoAsset,
     PhotoAlbum,
 )
-from pyicloud.base import PyiCloudService
 from artascope.src.util.latch import Latch
 from artascope.src.util import get_logger
 from artascope.src.util.date_util import DateUtil

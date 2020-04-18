@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/3/30
-from typing import List
 from artascope.src.model.mixin import JsonDataMixin
 
 

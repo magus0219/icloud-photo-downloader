@@ -399,9 +399,9 @@ class TestDownloader:
                 offset=0,
                 cnt=1,
             )
-        assert json.dumps({"filename": photos[0].id}, sort_keys=True) in str(
-            exc_info.value
-        )
+        assert json.dumps(
+            {"filename": "{}.jpg".format(photos[0].id)}, sort_keys=True
+        ) in str(exc_info.value)
 
     def test_download_photo_without_login(
         self, monkeypatch, set_not_existed_tempdir, photos, set_user
