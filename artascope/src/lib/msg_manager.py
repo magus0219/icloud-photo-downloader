@@ -32,4 +32,5 @@ class MsgManager:
                     smtp_password=user_setting.smtp_password,
                     msg_from=user_setting.msg_from,
                     msg_to=user_setting.msg_to.split(";"),
+                    msg=msg,
                 )
