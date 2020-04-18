@@ -354,7 +354,7 @@ class TestDownloader:
         )
 
         filename = "{ts}_{filename}".format(
-            filename=photos[0].filename, ts=int(photos[0].created.timestamp())
+            filename=photos[0].id, ts=int(photos[0].created.timestamp())
         )
 
         with pytest.raises(DataException,) as exc_info:
@@ -399,7 +399,7 @@ class TestDownloader:
                 offset=0,
                 cnt=1,
             )
-        assert json.dumps({"filename": photos[0].filename}, sort_keys=True) in str(
+        assert json.dumps({"filename": photos[0].id}, sort_keys=True) in str(
             exc_info.value
         )
 

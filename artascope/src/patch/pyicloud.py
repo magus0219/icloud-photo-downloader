@@ -37,7 +37,12 @@ def patch_photo_asset() -> None:
 
     :return:
     """
+
+    def id(self):
+        return self._asset_record["recordName"]
+
     setattr(PhotoAsset, "__getstate__", photo_asset_get_state)
+    setattr(PhotoAsset, "id", property(id))
 
 
 def __list_query_gen_simple(
@@ -111,26 +116,26 @@ def __get_photos_by_date(self):
         )
         response = request.json()
 
-        asset_records = {}
-        master_records = []
+        print(response)
+
+        asset_records = []
+        master_records = {}
         for rec in response["records"]:
             if rec["recordType"] == "CPLAsset":
                 master_id = rec["fields"]["masterRef"]["value"]["recordName"]
-                asset_records[master_id] = rec
+                asset_records.append({"master_id": master_id, "record": rec})
             elif rec["recordType"] == "CPLMaster":
-                master_records.append(rec)
+                master_records[rec["recordName"]] = rec
 
-        master_records_len = len(master_records)
-        if master_records_len:
-            if self.direction == "DESCENDING":
-                offset = offset - master_records_len
-            else:
-                offset = offset + master_records_len
+        asset_records_len = len(asset_records)
+        if asset_records_len:
+            offset = offset - asset_records_len
 
-            for master_record in master_records:
-                record_name = master_record["recordName"]
+            for asset_record in asset_records:
                 yield PhotoAsset(
-                    self.service, master_record, asset_records[record_name]
+                    self.service,
+                    master_records[asset_record["master_id"]],
+                    asset_record["record"],
                 )
         else:
             break
@@ -256,24 +261,25 @@ def fetch_photos(
         )
         response = request.json()
 
-        asset_records = {}
-        master_records = []
+        asset_records = []
+        master_records = {}
         for rec in response["records"]:
             if rec["recordType"] == "CPLAsset":
                 master_id = rec["fields"]["masterRef"]["value"]["recordName"]
-                asset_records[master_id] = rec
+                asset_records.append({"master_id": master_id, "record": rec})
             elif rec["recordType"] == "CPLMaster":
-                master_records.append(rec)
+                master_records[rec["recordName"]] = rec
 
-        master_records_len = len(master_records)
-        if master_records_len:
-            offset = offset - master_records_len
+        asset_records_len = len(asset_records)
+        if asset_records_len:
+            offset = offset - asset_records_len
 
-            for master_record in master_records:
-                record_name = master_record["recordName"]
+            for asset_record in asset_records:
                 if cnt:
                     yield PhotoAsset(
-                        self.service, master_record, asset_records[record_name]
+                        self.service,
+                        master_records[asset_record["master_id"]],
+                        asset_record["record"],
                     )
                     cnt -= 1
                 else:

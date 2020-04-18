@@ -28,13 +28,14 @@ MOCK_PHOTO_DATA = [
             },
         },
         "asset": {
+            "recordName": "asset1",
             "fields": {
                 "assetDate": {
                     "value": datetime.datetime(year=2020, month=1, day=1).timestamp()
                     * 1000
                 },
                 "masterRef": {"value": {"recordName": "record1"}},
-            }
+            },
         },
     },
     {
@@ -46,13 +47,14 @@ MOCK_PHOTO_DATA = [
             },
         },
         "asset": {
+            "recordName": "asset2",
             "fields": {
                 "assetDate": {
                     "value": datetime.datetime(year=2020, month=1, day=2).timestamp()
                     * 1000
                 },
                 "masterRef": {"value": {"recordName": "record2"}},
-            }
+            },
         },
     },
     {
@@ -64,13 +66,14 @@ MOCK_PHOTO_DATA = [
             },
         },
         "asset": {
+            "recordName": "asset3",
             "fields": {
                 "assetDate": {
                     "value": datetime.datetime(year=2020, month=1, day=3).timestamp()
                     * 1000
                 },
                 "masterRef": {"value": {"recordName": "record3"}},
-            }
+            },
         },
     },
 ]

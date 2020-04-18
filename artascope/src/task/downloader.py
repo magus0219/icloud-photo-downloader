@@ -135,7 +135,7 @@ def download_photo(
                         if not tempdir.exists():
                             os.mkdir(tempdir)
                         filename = "{ts}_{filename}".format(
-                            filename=photo.filename, ts=int(photo.created.timestamp())
+                            filename=photo.id, ts=int(photo.created.timestamp())
                         )
                         filepath = tempdir / filename
 
@@ -145,7 +145,7 @@ def download_photo(
                         upload_to_sftp.delay(
                             username=username,
                             src_filepath=str(filepath),
-                            filename=photo.filename,
+                            filename=photo.id,
                             created_dt=photo.created,
                         )
                         tm.finish_file_status(task_name, photo)
