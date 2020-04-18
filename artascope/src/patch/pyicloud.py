@@ -116,8 +116,6 @@ def __get_photos_by_date(self):
         )
         response = request.json()
 
-        print(response)
-
         asset_records = []
         master_records = {}
         for rec in response["records"]:
