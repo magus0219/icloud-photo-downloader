@@ -49,6 +49,7 @@ metadata:
   name: antascope-redis-pvc
   annotations:
     volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
+  namespace: artascope
 spec:
   accessModes:
     - ReadWriteMany
@@ -117,7 +118,7 @@ spec:
             initialDelaySeconds: 18
             periodSeconds: 2
 
-        - name: celery_worker_main
+        - name: celery-worker-main
           image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_main"]
           env:
@@ -126,12 +127,12 @@ spec:
             - name: TZ
               value: Asia/Shanghai
             - name: C_FORCE_ROOT
-              value: True
+              value: "true"
           volumeMounts:
             - mountPath: /tmp
               name: tmp-volume
 
-        - name: celery_worker_upload
+        - name: celery-worker-upload
           image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_upload"]
           env:
@@ -140,12 +141,12 @@ spec:
             - name: TZ
               value: Asia/Shanghai
             - name: C_FORCE_ROOT
-              value: True
+              value: "true"
           volumeMounts:
             - mountPath: /tmp
               name: tmp-volume
 
-        - name: celery_worker_msg
+        - name: celery-worker-msg
           image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_msg"]
           env:
@@ -154,9 +155,9 @@ spec:
             - name: TZ
               value: Asia/Shanghai
             - name: C_FORCE_ROOT
-              value: True
+              value: "true"
 
-        - name: celery_flower
+        - name: celery-flower
           image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_flower"]
           ports:
@@ -168,7 +169,7 @@ spec:
             - name: TZ
               value: Asia/Shanghai
             - name: C_FORCE_ROOT
-              value: True
+              value: "true"
 
         - name: scheduler
           image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
@@ -193,12 +194,14 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 16666
-      targetPort: 16666
-      nodePort: 31100
-    - port: 5555
-      targetPort: 5555
-      nodePort: 31101
+  - name: http-web
+    port: 16666
+    targetPort: 16666
+    nodePort: 31100
+  - name: http-flower
+    port: 5555
+    targetPort: 5555
+    nodePort: 31101
   selector:
     k8s-app: artascope-app
 
