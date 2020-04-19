@@ -39,6 +39,7 @@ app.conf.update(
     },
     task_acks_late=True,
     task_reject_on_worker_lost=True,
+    broker_transport_options={"visibility_timeout": 18000},
 )
 
 app.conf.beat_schedule = {
