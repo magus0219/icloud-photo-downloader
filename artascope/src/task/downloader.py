@@ -79,16 +79,23 @@ def download_file(photo: PhotoAsset, filepath: Path, file_size: int) -> None:
 
 
 @celery_app.task(
+    bind=True,
     autoretry_for=(Exception,),
     retry_backoff=60,
     retry_backoff_max=900,
     retry_kwargs={"max_retries": 10},
 )
 def download_photo(
-    task_name: str, username: str, batch: typing.List[PhotoAsset], offset: int, cnt: int
+    self,
+    task_name: str,
+    username: str,
+    batch: typing.List[PhotoAsset],
+    offset: int,
+    cnt: int,
 ):
     """Workload of downloading one photo
 
+    :param self:
     :param task_name:
     :param username:
     :param batch:
@@ -96,6 +103,8 @@ def download_photo(
     :param cnt:
     :return:
     """
+    logger.info("handle celery task:{}".format(self.request.id))
+
     patch_photo_asset()
     patch_photo_album()
 
