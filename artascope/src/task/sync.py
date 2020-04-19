@@ -83,7 +83,7 @@ def sync(
     date_start: datetime.date = None,
     date_end: datetime.date = None,
 ) -> str:
-    logger.info("handle celery task:{}".format(self.id))
+    logger.info("handle celery task:{}".format(self.request.id))
     task_name = get_task_name(
         username=username, last=last, date_start=date_start, date_end=date_end
     )
