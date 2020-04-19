@@ -1,0 +1,205 @@
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: artascope
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: docker-register-auth
+  namespace: artascope
+data:
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJuYXMubWFnaWNxaW4uY29tOjU1NTUiOiB7CgkJCSJhdXRoIjogImJXRm5kWE13TWpFNU9tSnZaVzVoTURJeE9RPT0iCgkJfQoJfQp9
+type: kubernetes.io/dockerconfigjson
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: artascope
+  name: artascope
+  namespace: artascope
+imagePullSecrets:
+  - name: docker-register-auth
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: artascope-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: artascope
+  namespace: artascope
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: antascope-redis-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 512Mi
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    k8s-app: artascope
+  name: artascope-app
+  namespace: artascope
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  minReadySeconds: 20
+  selector:
+    matchLabels:
+      k8s-app: artascope-app
+  template:
+    metadata:
+      labels:
+        k8s-app: artascope-app
+    spec:
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: antascope-redis-pvc
+      containers:
+        - name: artascope-redis
+          image: redis:5.0.6
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: redis-data
+
+        - name: artascope-web
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "web"]
+          ports:
+            - containerPort: 16666
+              protocol: TCP
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+          livenessProbe:
+            httpGet:
+              port: 16666
+              path: /user
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              port: 16666
+              path: /user
+            initialDelaySeconds: 18
+            periodSeconds: 2
+
+        - name: celery_worker_main
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "celery_worker_main"]
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+            - name: C_FORCE_ROOT
+              value: True
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+
+        - name: celery_worker_upload
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "celery_worker_upload"]
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+            - name: C_FORCE_ROOT
+              value: True
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+
+        - name: celery_worker_msg
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "celery_worker_msg"]
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+            - name: C_FORCE_ROOT
+              value: True
+
+        - name: celery_flower
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "celery_flower"]
+          ports:
+            - containerPort: 5555
+              protocol: TCP
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+            - name: C_FORCE_ROOT
+              value: True
+
+        - name: scheduler
+          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          command: ["/app/docker-entrypoint.sh", "scheduler"]
+          env:
+            - name: ARTASCOPE_ENV
+              value: prod
+            - name: TZ
+              value: Asia/Shanghai
+
+      serviceAccountName: artascope
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: artascope
+  name: artascope-service
+  namespace: artascope
+spec:
+  type: NodePort
+  ports:
+    - port: 16666
+      targetPort: 16666
+      nodePort: 31100
+    - port: 5555
+      targetPort: 5555
+      nodePort: 31101
+  selector:
+    k8s-app: artascope-app
+
+---
