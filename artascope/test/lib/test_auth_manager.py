@@ -275,6 +275,7 @@ class TestAuthManager:
     def test_check_login_status(self, am, monkeypatch):
         monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
 
+        api = am.login()
         am.check_login_status()
         assert am.get_login_status() == LoginStatus.NEED_LOGIN_AGAIN
 
