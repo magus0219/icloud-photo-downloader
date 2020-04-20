@@ -24,8 +24,8 @@ from artascope.src.patch.pyicloud import (
 from artascope.src.lib.auth_manager import AuthManager
 from artascope.src.task.post_action.sftp import upload_to_sftp
 from artascope.src.exception import (
-    GoneException,
-    LoginTimeoutException,
+    Gone,
+    LoginTimeout,
 )
 from artascope.src.util.context_manager import (
     task_exception_handler,
@@ -111,7 +111,7 @@ def download_photo(
     am = AuthManager(username)
     with task_exception_handler(am) as api:
         if not api:
-            raise LoginTimeoutException()
+            raise LoginTimeout()
 
         photo_service = api.photos
         album_all = api.photos.all
@@ -161,7 +161,7 @@ def download_photo(
                         pass
                     idx += 1
                 return
-            except GoneException as e:
+            except Gone as e:
                 offset -= idx
                 cnt -= idx
                 fetch_done = False

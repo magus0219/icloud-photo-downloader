@@ -28,7 +28,10 @@
             </div>
         </div>
         <hr class="my-4">
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a class="btn btn-primary" href="/user/send_captcha/{{ username|urlencode }}" target="_blank">Send Again</a>
+        </div>
     </form>
 </div>
 {% endblock %}

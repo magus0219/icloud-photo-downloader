@@ -33,10 +33,10 @@ from artascope.src.lib.task_manager import (
     TaskStatus,
 )
 from artascope.src.exception import (
-    NeedLoginAgainException,
-    ApiLimitException,
-    LoginTimeoutException,
-    GoneException,
+    NeedLoginAgain,
+    ApiLimitExceed,
+    LoginTimeout,
+    Gone,
 )
 from artascope.test.task.conftest import MockPyiCloudService
 from artascope.test.conftest import DataException
@@ -230,7 +230,7 @@ class TestDownloader:
             tm, "update_file_status", mock_update_file_status.__get__(tm)
         )
 
-        with pytest.raises(NeedLoginAgainException):
+        with pytest.raises(NeedLoginAgain):
             download_file(photo=photo, filepath=tgt_filepath, file_size=file_size)
         # assert "Range" not in photo._service.session.headers
 
@@ -265,7 +265,7 @@ class TestDownloader:
             tm, "update_file_status", mock_update_file_status.__get__(tm)
         )
 
-        with pytest.raises(ApiLimitException):
+        with pytest.raises(ApiLimitExceed):
             download_file(photo=photo, filepath=tgt_filepath, file_size=file_size)
         # assert "Range" not in photo._service.session.headers
 
@@ -415,7 +415,7 @@ class TestDownloader:
             LoginStatus.CAPTCHA_SENT
         )
 
-        with pytest.raises(LoginTimeoutException,):
+        with pytest.raises(LoginTimeout,):
             download_photo(
                 task_name="task_name",
                 username="username",
@@ -434,7 +434,7 @@ class TestDownloader:
         monkeypatch.setattr(AuthManager, "send_captcha", mock_send_captcha)
 
         def mock_download_file(photo, filepath, size):
-            raise NeedLoginAgainException()
+            raise NeedLoginAgain()
 
         monkeypatch.setattr(
             sys.modules["artascope.src.task.downloader"],
@@ -444,7 +444,7 @@ class TestDownloader:
 
         auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
-        with pytest.raises(NeedLoginAgainException):
+        with pytest.raises(NeedLoginAgain):
             download_photo(
                 task_name="task_name",
                 username="username",
@@ -455,7 +455,7 @@ class TestDownloader:
 
     def test_download_photo_api_limit(self, monkeypatch, photos, mock_login, set_user):
         def mock_download_file(photo, filepath, size):
-            raise ApiLimitException()
+            raise ApiLimitExceed()
 
         monkeypatch.setattr(
             sys.modules["artascope.src.task.downloader"],
@@ -466,7 +466,7 @@ class TestDownloader:
         auth_manager = AuthManager(username="username", password="password")
         auth_manager.set_login_status(LoginStatus.SUCCESS)
 
-        with pytest.raises(ApiLimitException):
+        with pytest.raises(ApiLimitExceed):
             download_photo(
                 task_name="task_name",
                 username="username",
@@ -578,7 +578,7 @@ class TestDownloader:
             nonlocal trigger
             if photo.id == photos[1].id and not trigger:
                 trigger = True
-                raise GoneException
+                raise Gone
             else:
                 return
 

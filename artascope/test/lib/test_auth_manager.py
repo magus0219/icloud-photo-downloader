@@ -16,7 +16,7 @@ from artascope.src.exception import (
     InvalidLoginStatus,
     APINotExisted,
     MissiCloudLoginCookie,
-    UnableToSendCaptchaException,
+    UnableToSendCaptcha,
 )
 import artascope.src.lib.auth_manager as auth_manager
 from artascope.src.lib.auth_manager import (
@@ -145,7 +145,8 @@ class TestAuthManager:
     def test_send_captcha_with_invalid_login_status(self, am):
         am.set_login_status(LoginStatus.CAPTCHA_RECEIVED)
         with pytest.raises(
-            InvalidLoginStatus, match="need NOT_LOGIN or NEED_LOGIN_AGAIN"
+            InvalidLoginStatus,
+            match="need NOT_LOGIN or NEED_LOGIN_AGAIN or CAPTCHA_WRONG",
         ):
             am.send_captcha()
 
@@ -254,7 +255,7 @@ class TestAuthManager:
         monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
         am.set_login_status(LoginStatus.NEED_LOGIN_AGAIN)
 
-        with pytest.raises(UnableToSendCaptchaException,):
+        with pytest.raises(UnableToSendCaptcha,):
             api = am.login()
         assert am.get_login_status() == LoginStatus.NEED_LOGIN_AGAIN
 
@@ -267,7 +268,7 @@ class TestAuthManager:
         )
         monkeypatch.setattr(pyicloud, "PyiCloudService", MockPyiCloudService)
 
-        with pytest.raises(UnableToSendCaptchaException,):
+        with pytest.raises(UnableToSendCaptcha,):
             api = am.login()
         assert am.get_login_status() == LoginStatus.NOT_LOGIN
 

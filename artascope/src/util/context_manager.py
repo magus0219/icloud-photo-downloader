@@ -12,11 +12,11 @@ from pyicloud.exceptions import (
     PyiCloudServiceNotActivatedException,
 )
 from artascope.src.exception import (
-    NeedLoginAgainException,
-    ApiLimitException,
-    UnableToSendCaptchaException,
-    LoginTimeoutException,
-    GoneException,
+    NeedLoginAgain,
+    ApiLimitExceed,
+    UnableToSendCaptcha,
+    LoginTimeout,
+    Gone,
 )
 from artascope.src.util.date_util import DateTimeUtil
 from artascope.src.util import get_logger
@@ -53,14 +53,14 @@ def task_exception_handler(auth: AuthManager):
             api = auth.login()
         else:
             yield api
-    except LoginTimeoutException as e:
+    except LoginTimeout as e:
         logger.info("login timeout")
         raise
-    except UnableToSendCaptchaException as e:
+    except UnableToSendCaptcha as e:
         logger.info("something is wrong")
         auth.prepare_to_login_again()
         raise
-    except NeedLoginAgainException as e:
+    except NeedLoginAgain as e:
         logger.info("need login again")
         auth.prepare_to_login_again()
         raise
@@ -68,7 +68,7 @@ def task_exception_handler(auth: AuthManager):
         logger.info("index not finished, try after 10 minutes")
         time.sleep(SECONDS_WAIT_FOR_API_LIMIT)
         raise
-    except ApiLimitException as e:
+    except ApiLimitExceed as e:
         logger.info("need slow down in download_file")
         time.sleep(SECONDS_WAIT_FOR_API_LIMIT)
         raise
@@ -93,11 +93,11 @@ def api_exception_handler():
             logger.exception(e)
         if "Gone (410)" in str(e):
             logger.info("Gone（410）happened.")
-            raise GoneException()
+            raise Gone()
         elif "Invalid global session" in str(e):
-            raise NeedLoginAgainException()
+            raise NeedLoginAgain()
         elif "private db access disabled for this account" in str(e):
-            raise ApiLimitException()
+            raise ApiLimitExceed()
         else:
             raise
     except Exception as e:

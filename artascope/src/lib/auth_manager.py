@@ -19,7 +19,7 @@ from artascope.src.exception import (
     APINotExisted,
     MissiCloudLoginCookie,
     InvalidLoginStatus,
-    UnableToSendCaptchaException,
+    UnableToSendCaptcha,
 )
 
 
@@ -165,8 +165,11 @@ class AuthManager:
         if self.get_login_status() not in (
             LoginStatus.NOT_LOGIN,
             LoginStatus.NEED_LOGIN_AGAIN,
+            LoginStatus.CAPTCHA_WRONG,
         ):
-            raise InvalidLoginStatus("need NOT_LOGIN or NEED_LOGIN_AGAIN")
+            raise InvalidLoginStatus(
+                "need NOT_LOGIN or NEED_LOGIN_AGAIN or CAPTCHA_WRONG"
+            )
         if not self._icloud_api:
             raise APINotExisted("icloud api not init.")
         device = self.get_trust_device()
@@ -249,13 +252,13 @@ class AuthManager:
                 self.send_captcha()
                 return None
             else:
-                raise UnableToSendCaptchaException()
+                raise UnableToSendCaptcha()
         elif status == LoginStatus.NEED_LOGIN_AGAIN:
             if not self.find_hsa_trust_cookie() and self.find_hsa_login_cookie():
                 self.send_captcha()
                 return None
             else:
-                raise UnableToSendCaptchaException()
+                raise UnableToSendCaptcha()
         elif status == LoginStatus.CAPTCHA_SENT:
             return None
         elif status == LoginStatus.CAPTCHA_RECEIVED:

@@ -22,7 +22,7 @@ from artascope.src.patch.pyicloud import (
     patch_photo_album,
     patch_photo_asset,
 )
-from artascope.src.exception import LoginTimeoutException
+from artascope.src.exception import LoginTimeout
 from artascope.src.util.context_manager import (
     task_exception_handler,
     api_exception_handler,
@@ -91,7 +91,7 @@ def sync(
     am = AuthManager(username, password)
     with task_exception_handler(am) as api:
         if not api:
-            raise LoginTimeoutException()
+            raise LoginTimeout()
 
         patch_photo_asset()
         patch_photo_album()

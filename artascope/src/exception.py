@@ -41,23 +41,23 @@ class FileStatusNotExisted(ArtascopeException):
     pass
 
 
-class NeedLoginAgainException(ArtascopeException):
+class NeedLoginAgain(ArtascopeException):
     pass
 
 
-class GoneException(ArtascopeException):
+class Gone(ArtascopeException):
     pass
 
 
-class UnableToSendCaptchaException(ArtascopeException):
+class UnableToSendCaptcha(ArtascopeException):
     pass
 
 
-class LoginTimeoutException(ArtascopeException):
+class LoginTimeout(ArtascopeException):
     pass
 
 
-class ApiLimitException(ArtascopeException):
+class ApiLimitExceed(ArtascopeException):
     pass
 
 

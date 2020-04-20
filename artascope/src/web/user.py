@@ -17,6 +17,7 @@ from artascope.src.lib.auth_manager import (
     LoginStatusText,
 )
 from artascope.src.model.user_config import UserConfig
+from artascope.src.exception import UserConfigNotExisted
 
 
 bp = Blueprint("user", __name__, url_prefix="/user")
@@ -77,3 +78,14 @@ def captcha(username):
         auth.receive_captcha(data["captcha"])
 
         return redirect(url_for("task.get_task_list", username=username))
+
+
+@bp.route("/send_captcha/<username>", methods=["GET"])
+def send_captcha(username):
+    try:
+        auth = AuthManager(username)
+        auth.send_captcha()
+
+        return "Captcha has been sent."
+    except Exception as e:
+        return str(e)

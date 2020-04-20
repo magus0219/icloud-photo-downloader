@@ -24,8 +24,8 @@ from artascope.src.task.sync import (
     decide_run_type,
 )
 from artascope.src.exception import (
-    NeedLoginAgainException,
-    ApiLimitException,
+    NeedLoginAgain,
+    ApiLimitExceed,
 )
 from artascope.src.util.date_util import DateUtil
 from artascope.test.conftest import MOCK_PHOTO_DATA
@@ -92,7 +92,7 @@ class TestSync:
             mock_fetch_photos,
         )
 
-        with pytest.raises(NeedLoginAgainException):
+        with pytest.raises(NeedLoginAgain):
             sync.apply(
                 kwargs={"username": "username", "password": "password"}, throw=True,
             )
@@ -111,7 +111,7 @@ class TestSync:
             mock_fetch_photos,
         )
 
-        with pytest.raises(ApiLimitException):
+        with pytest.raises(ApiLimitExceed):
             sync.apply(
                 kwargs={"username": "username", "password": "password"}, throw=True,
             )
