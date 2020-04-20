@@ -30,7 +30,7 @@
         <hr class="my-4">
         <div>
             <button type="submit" class="btn btn-primary">Submit</button>
-            <a class="btn btn-primary" href="/user/send_captcha/{{ username|urlencode }}" target="_blank">Send Again</a>
+            <a class="btn btn-primary" href="/user/send_captcha/{{ user.username|urlencode }}" target="_blank">Send Again</a>
         </div>
     </form>
 </div>
