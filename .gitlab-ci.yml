@@ -52,7 +52,7 @@ deploy_prod:
     - echo $KUBE_URL $KUBE_TOKEN $KUBE_NAMESPACE $KUBECONFIG
     - export KUBECONFIG=$KUBECONFIG
     - echo $KUBECONFIG
-    - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/artascope:$CI_COMMIT_SHA
+    - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/icloud-photo-downloader:$CI_COMMIT_SHA
     - echo $NEW_IMAGE
     - kubectl set image deployment artascope-app artascope-web=$NEW_IMAGE celery-worker-main=$NEW_IMAGE celery-worker-upload=$NEW_IMAGE celery-worker-msg=$NEW_IMAGE celery-flower=$NEW_IMAGE scheduler=$NEW_IMAGE --record -n artascope
   variables:
