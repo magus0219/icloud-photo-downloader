@@ -80,8 +80,12 @@ class TestTask:
             task_name="task_name",
             username="username",
             run_type=TaskRunType.DATE_RANGE,
-            date_start=DateTimeUtil.get_datetime_from_date_str("20200101").timestamp(),
-            date_end=DateTimeUtil.get_datetime_from_date_str("20200102").timestamp(),
+            date_start=int(
+                DateTimeUtil.get_datetime_from_date_str("20200101").timestamp()
+            ),
+            date_end=int(
+                DateTimeUtil.get_datetime_from_date_str("20200102").timestamp()
+            ),
         )
 
         tm.update_task_total(task_name="task_name", total=100)

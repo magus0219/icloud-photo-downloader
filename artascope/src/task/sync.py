@@ -59,10 +59,10 @@ def get_task_name(
             username=username,
             run_type=decide_run_type(last, date_start, date_end),
             last=last,
-            date_start=DateTimeUtil.get_datetime_from_date(date_start).timestamp()
+            date_start=int(DateTimeUtil.get_datetime_from_date(date_start).timestamp())
             if date_start
             else None,
-            date_end=DateTimeUtil.get_datetime_from_date(date_end).timestamp()
+            date_end=int(DateTimeUtil.get_datetime_from_date(date_end).timestamp())
             if date_end
             else None,
         )

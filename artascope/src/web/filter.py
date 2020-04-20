@@ -5,5 +5,9 @@
 import datetime
 
 
-def unixtime_to_str(val, format_str="%Y-%m-%d %H:%M:%S"):
-    return datetime.datetime.fromtimestamp(val).strftime(format_str)
+def unixtime_to_str(val: int, format_str="%Y-%m-%d %H:%M:%S"):
+    return (
+        datetime.datetime.fromtimestamp(val).strftime(format_str)
+        if isinstance(val, int)
+        else ""
+    )

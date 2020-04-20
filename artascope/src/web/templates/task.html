@@ -34,7 +34,7 @@
             <th>Status</th>
             <th>Done/Total</th>
         </tr>
-        {% for one_task in tasks %}
+        {% for one_task in tasks|reverse %}
         <tr>
             <td>{{ loop.index }}</td>
             <td><a href="/task/status/{{ one_task.task_name }}">{{ one_task.task_name }}</a></td>
