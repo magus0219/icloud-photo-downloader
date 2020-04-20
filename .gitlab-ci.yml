@@ -54,10 +54,9 @@ deploy_prod:
     - echo $KUBECONFIG
     - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/artascope:$CI_COMMIT_SHA
     - echo $NEW_IMAGE
-    - kubectl set image deployment birdman-app birdman-server=$NEW_IMAGE birdman-celery=$NEW_IMAGE birdman-web=$NEW_IMAGE --record -n artascope
+    - kubectl set image deployment artascope-app artascope-web=$NEW_IMAGE celery-worker-main=$NEW_IMAGE celery-worker-upload=$NEW_IMAGE celery-worker-msg=$NEW_IMAGE celery-flower=$NEW_IMAGE scheduler=$NEW_IMAGE --record -n artascope
   variables:
     ARTASCOPE_ENV: prod
-    ARTASCOPE_WEB_PORT: 16666
   environment:
     name: prod
   when: manual
