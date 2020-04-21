@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM nas.magicqin.com:5555/magicqin/images/python:3.7.4-base
+FROM nas.magicqin.com:5555/magicqin/images/python:base-3.7.4-alpine
 
 # Set the working directory to /app
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN PIPENV_PYPI_MIRROR=https://mirrors.aliyun.com/pypi/simple/ pipenv install --
 COPY . /app
 
 # Make port 8888 available to the world outside this container
-EXPOSE 8888
+#EXPOSE 8888
 
 ## Define environment variable
 ENV PYTHONPATH .
