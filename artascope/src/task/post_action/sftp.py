@@ -80,7 +80,7 @@ def upload_to_sftp(
         logger.debug("target position:{}".format(str(tgt_filepath)))
         try:
             sftp_client.remove(str(tgt_filepath))
-        except (FileNotFoundError, PermissionError) as e:
+        except (FileNotFoundError, PermissionError, OSError) as e:
             pass
         sftp_client.put(src_filepath, str(tgt_filepath))
         modify_meta(sftp_client, str(tgt_filepath), created_dt)
