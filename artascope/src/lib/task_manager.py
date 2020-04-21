@@ -84,6 +84,16 @@ class TaskManager:
         task = self.load_task(task_name)
         task.status = TaskStatus.FAIL
         self.save_task(task)
+
+        tasks = self._redis.lrange(
+            "{key}:{task_name}".format(key=CELERY_TASK_KEY, task_name=task_name), 0, -1
+        )
+        for one_task_id in tasks:
+            one_task_id = one_task_id.decode("utf8")
+            from artascope.src.celery_app import app
+
+            AsyncResult(one_task_id, backend=app.backend).revoke(terminate=True)
+
         if self.get_current_task_name(task.username) == task_name:
             self.clear_current_task_name(task.username)
 
