@@ -40,7 +40,7 @@ deploy_stage:
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
     ARTASCOPE_WEB_PORT: 31100
     ARTASCOPE_FLOWER_PORT: 31101
-    TIME_ZONE: "Asia/Shanghai"
+    TZ: "Asia/Shanghai"
   environment:
     name: staging
   when: manual
