@@ -8,12 +8,12 @@ services:
       - artascope-redis:/data
 
   web:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_web
     restart: always
     environment:
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     ports:
       - "${ARTASCOPE_WEB_PORT}:16666"
     command: ["web"]
@@ -24,13 +24,13 @@ services:
       - celery_worker_msg
 
   celery_worker_main:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery_worker_main
     restart: always
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     command: ["celery_worker_main"]
     depends_on:
       - redis
@@ -38,13 +38,13 @@ services:
       - artascope-tmp:/tmp
 
   celery_worker_upload:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery_worker_upload
     restart: always
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     command: ["celery_worker_upload"]
     depends_on:
       - redis
@@ -52,25 +52,25 @@ services:
       - artascope-tmp:/tmp
 
   celery_worker_msg:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery_worker_msg
     restart: always
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     command: ["celery_worker_msg"]
     depends_on:
       - redis
 
   celery_flower:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_celery_flower
     restart: always
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     ports:
       - "${ARTASCOPE_FLOWER_PORT}:5555"
     command: ["celery_flower"]
@@ -78,12 +78,12 @@ services:
       - redis
 
   scheduler:
-    image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+    image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_scheduler
     restart: always
     environment:
       - ARTASCOPE_ENV
-      - TZ=Asia/Shanghai
+      - TZ
     command: ["scheduler"]
     depends_on:
       - redis

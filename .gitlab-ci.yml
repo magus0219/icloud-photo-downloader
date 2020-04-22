@@ -33,11 +33,13 @@ test:
 deploy_stage:
   stage: deploy
   script:
-    - docker-compose up -d
+    - docker-compose up -d -f deployment/docker-compose/docker-compose.yml
   variables:
     ARTASCOPE_ENV: staging
+    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
     ARTASCOPE_WEB_PORT: 31100
     ARTASCOPE_FLOWER_PORT: 31101
+    TIME_ZONE: "Asia/Shanghai"
   environment:
     name: staging
   when: manual
@@ -48,14 +50,11 @@ deploy_prod:
   image: nas.magicqin.com:5555/magicqin/images/docker:19.03.3-kubectl
   stage: deploy
   script:
-    - echo $CI_COMMIT_SHA
-    - echo $KUBE_URL $KUBE_TOKEN $KUBE_NAMESPACE $KUBECONFIG
     - export KUBECONFIG=$KUBECONFIG
-    - echo $KUBECONFIG
     - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/icloud-photo-downloader:$CI_COMMIT_SHA
-    - echo $NEW_IMAGE
     - kubectl set image deployment artascope-app artascope-web=$NEW_IMAGE celery-worker-main=$NEW_IMAGE celery-worker-upload=$NEW_IMAGE celery-worker-msg=$NEW_IMAGE celery-flower=$NEW_IMAGE scheduler=$NEW_IMAGE --record -n artascope
   variables:
+    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
     ARTASCOPE_ENV: prod
   environment:
     name: prod
