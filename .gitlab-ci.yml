@@ -4,7 +4,7 @@ stages:
   - build
   - test
   - deploy
-  - public
+  - release
 
 services:
 - name: redis:5.0.7
@@ -34,7 +34,7 @@ test:
 deploy_stage:
   stage: deploy
   script:
-    - docker-compose -f deployment/docker-compose up -d
+    - docker-compose -f deployment/docker-compose/docker-compose.yml up -d
   variables:
     ARTASCOPE_ENV: staging
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
@@ -63,13 +63,19 @@ deploy_prod:
   only:
     - master
 
-public_to_docker_hub:
+release_to_docker_hub:
   image:
     name: $CI_REGISTRY_IMAGE:latest
-  stage: public
+  stage: release
   script:
+    - export VERSION=`cat .project_version`
+    - echo `git remote -v`
+    - echo "git tag v${VERSION}"
+    - echo "git push --tags"
+    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:v${VERSION}
     - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
     - docker push magicqin/icloud-photo-downloader:latest
+    - docker push magicqin/icloud-photo-downloader:v${VERSION}
   environment:
     name: prod
   when: manual
