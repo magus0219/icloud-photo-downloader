@@ -32,11 +32,9 @@ test:
     - /app/docker-entrypoint.sh test
 
 deploy_stage:
-  image:
-    name: $CI_REGISTRY_IMAGE:latest
   stage: deploy
   script:
-    - cd /app/deployment/docker-compose
+    - cd /deployment/docker-compose
     - docker-compose up -d
   variables:
     ARTASCOPE_ENV: staging
