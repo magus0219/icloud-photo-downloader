@@ -22,7 +22,6 @@ build:
 test:
   image:
     name: $CI_REGISTRY_IMAGE:latest
-    entrypoint: [""]
   variables:
     ARTASCOPE_ENV: test
   stage: test

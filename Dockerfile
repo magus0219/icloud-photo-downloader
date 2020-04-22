@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM nas.magicqin.com:5555/magicqin/images/python:base-3.7.4-alpine
+FROM nas.magicqin.com:5555/magicqin/images/python:base-latest
 
 # Set the working directory to /app
 WORKDIR /app
