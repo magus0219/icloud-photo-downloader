@@ -17,8 +17,8 @@ from artascope.src.lib.task_manager import (
 )
 
 MOCK_NEW_USER = {
-    "account_username": "account_name",
-    "account_password": "account_password",
+    "icloud_username": "account_name",
+    "icloud_password": "icloud_password",
     "admin_url_prefix": "http://127.0.0.1:5000",
     "target": "1",
     "sftp_host": "198.168.50.118",
@@ -121,24 +121,24 @@ class TestUser:
         assert b'href="/user/captcha/account_name"' in response.data
 
     def test_user_edit_get_exsited_user(self, client, response):
-        response = client.get("/user/edit/{}".format(MOCK_NEW_USER["account_username"]))
+        response = client.get("/user/edit/{}".format(MOCK_NEW_USER["icloud_username"]))
         assert b"Edit User Setting" in response.data  # test jumbotron
         print(response.data)
 
         assert (
-            "of {}".format(MOCK_NEW_USER["account_username"]).encode() in response.data
+            "of {}".format(MOCK_NEW_USER["icloud_username"]).encode() in response.data
         )  # test jumbotron
 
         # test info
         assert (
-            '<input type="email" class="form-control" id="inputEmail" name="account_username" value="{}"'.format(
-                MOCK_NEW_USER["account_username"]
+            '<input type="email" class="form-control" id="inputEmail" name="icloud_username" value="{}"'.format(
+                MOCK_NEW_USER["icloud_username"]
             ).encode()
             in response.data
         )
         assert (
-            '<input type="text" class="form-control" id="inputPassword" name="account_password" value="{}"'.format(
-                MOCK_NEW_USER["account_password"]
+            '<input type="text" class="form-control" id="inputPassword" name="icloud_password" value="{}"'.format(
+                MOCK_NEW_USER["icloud_password"]
             ).encode()
             in response.data
         )
@@ -253,20 +253,20 @@ class TestUser:
 
     def test_user_captcha_get(self, client, response):
         response = client.get(
-            "/user/captcha/{}".format(MOCK_NEW_USER["account_username"])
+            "/user/captcha/{}".format(MOCK_NEW_USER["icloud_username"])
         )
 
         # test info
         assert b"Captcha" in response.data  # test jumbotron
         assert (
-            "enter captcha of {}".format(MOCK_NEW_USER["account_username"]).encode()
+            "enter captcha of {}".format(MOCK_NEW_USER["icloud_username"]).encode()
             in response.data
         )
 
     def test_user_captcha_post_without_current_task(self, client, response):
         data = {"captcha": "abcd"}
         response = client.post(
-            "/user/captcha/{}".format(MOCK_NEW_USER["account_username"]),
+            "/user/captcha/{}".format(MOCK_NEW_USER["icloud_username"]),
             data=data,
             follow_redirects=True,
         )
@@ -274,24 +274,24 @@ class TestUser:
         # test info
         assert b"Task List" in response.data  # test jumbotron
         assert (
-            "of {}".format(MOCK_NEW_USER["account_username"]).encode() in response.data
+            "of {}".format(MOCK_NEW_USER["icloud_username"]).encode() in response.data
         )
 
         assert (
-            AuthManager(username=MOCK_NEW_USER["account_username"]).get_login_status()
+            AuthManager(username=MOCK_NEW_USER["icloud_username"]).get_login_status()
             == LoginStatus.CAPTCHA_RECEIVED
         )
 
     def test_user_captcha_post_with_current_task(self, client, response):
         tm.add_task(
             task_name="task_name",
-            username=MOCK_NEW_USER["account_username"],
+            username=MOCK_NEW_USER["icloud_username"],
             run_type=TaskRunType.ALL,
         )
 
         data = {"captcha": "abcd"}
         response = client.post(
-            "/user/captcha/{}".format(MOCK_NEW_USER["account_username"]),
+            "/user/captcha/{}".format(MOCK_NEW_USER["icloud_username"]),
             data=data,
             follow_redirects=True,
         )
@@ -299,11 +299,11 @@ class TestUser:
         # test info
         assert b"Task List" in response.data  # test jumbotron
         assert (
-            "of {}".format(MOCK_NEW_USER["account_username"]).encode() in response.data
+            "of {}".format(MOCK_NEW_USER["icloud_username"]).encode() in response.data
         )
 
         assert (
-            AuthManager(username=MOCK_NEW_USER["account_username"]).get_login_status()
+            AuthManager(username=MOCK_NEW_USER["icloud_username"]).get_login_status()
             == LoginStatus.CAPTCHA_RECEIVED
         )
 
