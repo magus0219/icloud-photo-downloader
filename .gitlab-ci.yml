@@ -4,6 +4,7 @@ stages:
   - build
   - test
   - deploy
+  - public
 
 services:
 - name: redis:5.0.7
@@ -31,6 +32,8 @@ test:
     - /app/docker-entrypoint.sh test
 
 deploy_stage:
+  image:
+    name: $CI_REGISTRY_IMAGE:latest
   stage: deploy
   script:
     - cd /app/deployment/docker-compose
@@ -57,6 +60,19 @@ deploy_prod:
   variables:
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
     ARTASCOPE_ENV: prod
+  environment:
+    name: prod
+  when: manual
+  only:
+    - master
+
+public_to_docker_hub:
+  image:
+    name: $CI_REGISTRY_IMAGE:latest
+  stage: public
+  script:
+    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
+    - docker push magicqin/icloud-photo-downloader:latest
   environment:
     name: prod
   when: manual
