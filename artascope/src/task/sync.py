@@ -111,25 +111,34 @@ def sync(
         tm.update_task_total(task_name, cnt)
         logger.info("get photos meta data done.")
 
-        batch = []
-        for photo in photos:
-            tm.add_file_status(task_name, photo)
-            logger.debug(
-                "{}:{}".format(photo.filename, photo.created.astimezone(tz_shanghai))
-            )
-            batch.append(photo)
+        if cnt == 0:
+            # nothing to do
+            tm.finish_task(task_name)
 
-            if len(batch) == BATCH_CNT:
+        else:
+            batch = []
+            for photo in photos:
+                tm.add_file_status(task_name, photo)
+                logger.debug(
+                    "{}:{}".format(
+                        photo.filename, photo.created.astimezone(tz_shanghai)
+                    )
+                )
+                batch.append(photo)
+
+                if len(batch) == BATCH_CNT:
+                    rlt = download_photo.delay(
+                        task_name, username, batch, offset, BATCH_CNT
+                    )
+                    tm.attach_celery_task_id(task_name, rlt.id)
+                    batch = []
+                    offset -= BATCH_CNT
+
+            if len(batch):
                 rlt = download_photo.delay(
-                    task_name, username, batch, offset, BATCH_CNT
+                    task_name, username, batch, offset, len(batch)
                 )
                 tm.attach_celery_task_id(task_name, rlt.id)
-                batch = []
-                offset -= BATCH_CNT
-
-        if len(batch):
-            rlt = download_photo.delay(task_name, username, batch, offset, len(batch))
-            tm.attach_celery_task_id(task_name, rlt.id)
         logger.info("Need download {} photos".format(cnt))
 
         return task_name
