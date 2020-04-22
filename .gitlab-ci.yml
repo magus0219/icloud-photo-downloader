@@ -64,8 +64,6 @@ deploy_prod:
     - master
 
 release_to_docker_hub:
-  image:
-    name: $CI_REGISTRY_IMAGE:latest
   stage: release
   script:
     - export VERSION=`cat .project_version`
@@ -77,7 +75,7 @@ release_to_docker_hub:
     - docker push magicqin/icloud-photo-downloader:latest
     - docker push magicqin/icloud-photo-downloader:v${VERSION}
   environment:
-    name: prod
+    name: release
   when: manual
   only:
     - master
