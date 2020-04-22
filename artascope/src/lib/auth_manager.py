@@ -117,7 +117,7 @@ class AuthManager:
                 logger.info(
                     "check_login_status:{}".format(str(self._icloud_api.requires_2sa))
                 )
-            self.prepare_to_login_again()
+            self.set_login_status(LoginStatus.NEED_LOGIN_AGAIN)
 
     def set_trust_device(self, device: dict) -> None:
         self._redis.set(
