@@ -44,9 +44,7 @@ def user_edit(username=None):
         data = request.form
         user_setting = ucm.load(data["account_username"])
         if not user_setting:
-            user_setting = UserConfig(
-                data["account_username"], data["account_password"]
-            )
+            user_setting = UserConfig(data["account_username"], data["icloud_password"])
 
         for key, value in user_setting.__dict__.items():
             if key in data and data[key] not in ("None", ""):
