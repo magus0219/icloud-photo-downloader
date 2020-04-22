@@ -33,7 +33,8 @@ test:
 deploy_stage:
   stage: deploy
   script:
-    - docker-compose up -d -f deployment/docker-compose/docker-compose.yml
+    - cd /app/deployment/docker-compose
+    - docker-compose up -d
   variables:
     ARTASCOPE_ENV: staging
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
