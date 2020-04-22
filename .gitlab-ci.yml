@@ -34,7 +34,7 @@ test:
 deploy_stage:
   stage: deploy
   script:
-    - cd /deployment/docker-compose
+    - cd deployment/docker-compose
     - docker-compose up -d
   variables:
     ARTASCOPE_ENV: staging
