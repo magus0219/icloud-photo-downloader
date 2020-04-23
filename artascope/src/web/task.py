@@ -83,9 +83,11 @@ def run_task(username):
             date_start = DateTimeUtil.get_datetime_from_date_str(
                 data["date_start"]
             ).timestamp()
-            date_end = DateTimeUtil.get_datetime_from_date_str(
-                data["date_end"]
-            ).timestamp()
+            date_end = (
+                DateTimeUtil.get_datetime_from_date_str(data["date_end"]).timestamp()
+                if data["date_end"]
+                else None
+            )
             sync.delay(
                 username=user_setting.icloud_username,
                 password=user_setting.icloud_password,
