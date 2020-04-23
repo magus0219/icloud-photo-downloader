@@ -69,15 +69,13 @@ release_to_docker_hub:
   stage: release
   script:
     - export VERSION=`cat .project_version`
-    - echo `git remote -v`
-    - git tag v${VERSION}
-    - git push --tags
-    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:v${VERSION}
+    - echo release ${VERSION}
+    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:${VERSION}
     - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
     - docker push magicqin/icloud-photo-downloader:latest
-    - docker push magicqin/icloud-photo-downloader:v${VERSION}
+    - docker push magicqin/icloud-photo-downloader:${VERSION}
   environment:
     name: release
   when: manual
   only:
-    - master
+    - tags
