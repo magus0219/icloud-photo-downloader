@@ -68,6 +68,7 @@ release_to_docker_hub:
   script:
     - export VERSION=`cat .project_version`
     - echo $DOCKER_AUTH_CONFIG
+    - cat ~/.docker/config.json
     - echo `git remote -v`
     - echo "git tag v${VERSION}"
     - echo "git push --tags"
