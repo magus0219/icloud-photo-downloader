@@ -24,8 +24,9 @@ git clone https://github.com/magus0219/icloud-photo-downloader
 Use the [docker-compose](https://docs.docker.com/compose/) to install artascope.
 
 ```bash
-ARTASCOPE_ENV=prod_docker_compose ARTASCOPE_WEB_PORT={port1} ARTASCOPE_FLOWER_PORT={port2} docker-compose -f deployment/docker-compose/docker-compose.yml up -d
+env=value... docker-compose -f deployment/docker-compose/docker-compose.yml up -d
 ```
+You can add env
 * ARTASCOPE_WEB_PORT is port of web admin
 * ARTASCOPE_FLOWER_PORT is port of flower (celery admin)
 
@@ -35,6 +36,7 @@ Use the [Kubernetes](https://kubernetes.io/) to install artascope.
 1. Build k8s yaml with custom environment variables
     1. Install [envsubst](https://command-not-found.com/envsubst)
     2. Build using the following script:
+
     ```bash
     cd deployment/k8s
     env1=value1 env2=value2... sh ./create_k8s_yaml.sh
@@ -62,7 +64,7 @@ kubectl apply -f build/
 ### docker-compose
 ```bash
 cd deployment/docker-compose
-ARTASCOPE_ENV=prod_docker_compose ARTASCOPE_WEB_PORT={port1} ARTASCOPE_FLOWER_PORT={port2} docker-compose down -v --rmi all
+ARTASCOPE_WEB_PORT={port1} ARTASCOPE_FLOWER_PORT={port2} docker-compose down -v --rmi all
 ```
 
 ### kubernetes
