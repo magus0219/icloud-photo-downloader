@@ -94,7 +94,7 @@ services:
     container_name: artascope_scheduler
     restart: always
     environment:
-      - ARTASCOPE_ENV="${ARTASCOPE_ENV:-prod_docker_compose}"
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
       - TIMEZONE=${TIMEZONE:-UTC}
     command: ["scheduler"]
     depends_on:
