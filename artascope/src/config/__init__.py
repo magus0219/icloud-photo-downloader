@@ -15,4 +15,7 @@ if env:
         if not name.startswith("__"):
             setattr(sys.modules[__name__], name, getattr(config_module, name))
 
+        if name in os.environ:
+            setattr(sys.modules[__name__], name, os.environ[name])
+
     setattr(sys.modules[__name__], "ENV", env)

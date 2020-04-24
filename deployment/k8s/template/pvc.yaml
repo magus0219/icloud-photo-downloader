@@ -3,8 +3,8 @@ apiVersion: v1
 metadata:
   name: antascope-redis-pvc
   annotations:
-    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
-  namespace: artascope
+    volume.beta.kubernetes.io/storage-class: ${ARTASCOPE_STORAGE_CLASS}
+  namespace: ${ARTASCOPE_NAMESPACE}
 spec:
   accessModes:
     - ReadWriteMany

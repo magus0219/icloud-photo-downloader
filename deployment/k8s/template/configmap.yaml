@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-config
+  namespace: ${ARTASCOPE_NAMESPACE}
+data:
+  ARTASCOPE_ENV: prod_k8s
+  TIMEZONE: ${ARTASCOPE_TIMEZONE}

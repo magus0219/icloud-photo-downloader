@@ -3,6 +3,7 @@
 *.txt
 .coverage
 .pytest_cache
+**/build/
 
 ######## IDE ########
 .idea

@@ -36,11 +36,11 @@ deploy_stage:
   script:
     - docker-compose -f deployment/docker-compose/docker-compose.yml up -d
   variables:
-    ARTASCOPE_ENV: staging
+    ARTASCOPE_ENV: prod_docker_compose
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
     ARTASCOPE_WEB_PORT: 31100
     ARTASCOPE_FLOWER_PORT: 31101
-    TZ: "Asia/Shanghai"
+    TIMEZONE: "Asia/Shanghai"
   environment:
     name: staging
   when: manual
@@ -56,7 +56,7 @@ deploy_prod:
     - kubectl set image deployment artascope-app artascope-web=$NEW_IMAGE celery-worker-main=$NEW_IMAGE celery-worker-upload=$NEW_IMAGE celery-worker-msg=$NEW_IMAGE celery-flower=$NEW_IMAGE scheduler=$NEW_IMAGE --record -n artascope
   variables:
     ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
-    ARTASCOPE_ENV: prod
+    ARTASCOPE_ENV: prod_k8s
   environment:
     name: prod
   when: manual

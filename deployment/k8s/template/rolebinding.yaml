@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: artascope
-  namespace: artascope
+  namespace: ${ARTASCOPE_NAMESPACE}

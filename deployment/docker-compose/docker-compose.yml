@@ -6,22 +6,26 @@ services:
     restart: unless-stopped
     volumes:
       - artascope-redis:/data
+    networks:
+      - artascope-net
 
   web:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_web
     restart: always
     environment:
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
+      - TIMEZONE=${TIMEZONE:-UTC}
     ports:
-      - "${ARTASCOPE_WEB_PORT}:16666"
+      - "${ARTASCOPE_WEB_PORT:-16666}:16666"
     command: ["web"]
     depends_on:
       - redis
       - celery_worker_main
       - celery_worker_upload
       - celery_worker_msg
+    networks:
+      - artascope-net
 
   celery_worker_main:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
@@ -29,13 +33,15 @@ services:
     restart: always
     environment:
       - C_FORCE_ROOT=True
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
+      - TIMEZONE=${TIMEZONE:-UTC}
     command: ["celery_worker_main"]
     depends_on:
       - redis
     volumes:
       - artascope-tmp:/tmp
+    networks:
+      - artascope-net
 
   celery_worker_upload:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
@@ -43,13 +49,15 @@ services:
     restart: always
     environment:
       - C_FORCE_ROOT=True
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
+      - TIMEZONE=${TIMEZONE:-UTC}
     command: ["celery_worker_upload"]
     depends_on:
       - redis
     volumes:
       - artascope-tmp:/tmp
+    networks:
+      - artascope-net
 
   celery_worker_msg:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
@@ -57,11 +65,13 @@ services:
     restart: always
     environment:
       - C_FORCE_ROOT=True
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
+      - TIMEZONE=${TIMEZONE:-UTC}
     command: ["celery_worker_msg"]
     depends_on:
       - redis
+    networks:
+      - artascope-net
 
   celery_flower:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
@@ -69,25 +79,29 @@ services:
     restart: always
     environment:
       - C_FORCE_ROOT=True
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
+      - TIMEZONE=${TIMEZONE:-UTC}
     ports:
-      - "${ARTASCOPE_FLOWER_PORT}:5555"
+      - "${ARTASCOPE_FLOWER_PORT:-5555}:5555"
     command: ["celery_flower"]
     depends_on:
       - redis
+    networks:
+      - artascope-net
 
   scheduler:
     image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
     container_name: artascope_scheduler
     restart: always
     environment:
-      - ARTASCOPE_ENV
-      - TZ
+      - ARTASCOPE_ENV="${ARTASCOPE_ENV:-prod_docker_compose}"
+      - TIMEZONE=${TIMEZONE:-UTC}
     command: ["scheduler"]
     depends_on:
       - redis
       - celery_worker_main
+    networks:
+      - artascope-net
 
 volumes:
   artascope-redis:

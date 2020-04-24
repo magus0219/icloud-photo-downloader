@@ -4,17 +4,17 @@ metadata:
   labels:
     k8s-app: artascope
   name: artascope-service
-  namespace: artascope
+  namespace: ${ARTASCOPE_NAMESPACE}
 spec:
   type: NodePort
   ports:
   - name: http-web
     port: 16666
     targetPort: 16666
-    nodePort: 31100
+    nodePort: ${ARTASCOPE_ADMIN_PORT}
   - name: http-flower
     port: 5555
     targetPort: 5555
-    nodePort: 31101
+    nodePort: ${ARTASCOPE_FLOWER_PORT}
   selector:
     k8s-app: artascope-app

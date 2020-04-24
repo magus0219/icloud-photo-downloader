@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: artascope
   name: artascope-app
-  namespace: artascope
+  namespace: ${ARTASCOPE_NAMESPACE}
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -34,16 +34,14 @@ spec:
               name: redis-data
 
         - name: artascope-web
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "web"]
           ports:
             - containerPort: 16666
               protocol: TCP
-          env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
+          envFrom:
+            - configMapRef:
+                name: env-config
           livenessProbe:
             httpGet:
               port: 16666
@@ -58,65 +56,59 @@ spec:
             periodSeconds: 2
 
         - name: celery-worker-main
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_main"]
           env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
             - name: C_FORCE_ROOT
               value: "true"
+          envFrom:
+            - configMapRef:
+                name: env-config
           volumeMounts:
             - mountPath: /tmp
               name: tmp-volume
 
         - name: celery-worker-upload
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_upload"]
           env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
             - name: C_FORCE_ROOT
               value: "true"
+          envFrom:
+            - configMapRef:
+                name: env-config
           volumeMounts:
             - mountPath: /tmp
               name: tmp-volume
 
         - name: celery-worker-msg
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_worker_msg"]
           env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
             - name: C_FORCE_ROOT
               value: "true"
+          envFrom:
+            - configMapRef:
+                name: env-config
 
         - name: celery-flower
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "celery_flower"]
           ports:
             - containerPort: 5555
               protocol: TCP
           env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
             - name: C_FORCE_ROOT
               value: "true"
+          envFrom:
+            - configMapRef:
+                name: env-config
 
         - name: scheduler
-          image: nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest
+          image: ${ARTASCOPE_DOCKER_REGISTRY}magicqin/icloud-photo-downloader:latest
           command: ["/app/docker-entrypoint.sh", "scheduler"]
-          env:
-            - name: ARTASCOPE_ENV
-              value: prod
-            - name: TZ
-              value: Asia/Shanghai
+          envFrom:
+            - configMapRef:
+                name: env-config
 
       serviceAccountName: artascope
