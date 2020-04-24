@@ -9,7 +9,7 @@ set -e
 if [[ "$1" = 'web' ]]; then
 	# start web
 	echo "start web server"
-	gunicorn -w 2 -b 0.0.0.0:16666 artascope.src.wsgi:app
+	gunicorn -w 2 -b 0.0.0.0:16666 artascope.src.wsgi:app --access-logfile - --error-logfile -
 fi
 
 if [[ "$1" = 'celery_worker_main' ]]; then
