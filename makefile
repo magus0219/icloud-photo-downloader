@@ -6,7 +6,7 @@ test : clean
 	ARTASCOPE_ENV=localtest pipenv run pytest --cov=artascope/src --cov-report term --cov-report html:cov_html
 
 check:
-	pre-commit run --all-file
+	pipenv run pre-commit run --all-file
 
 release:
 	@echo tag $(VER)

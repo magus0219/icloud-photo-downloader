@@ -4,11 +4,12 @@
 # Created by magus0219[magus0219@gmail.com] on 2020/4/26
 import pytest
 from artascope.src.util.prefix_redis import PrefixRedis
+from artascope.src.config import REDIS_CONFIG
 
 
 @pytest.fixture()
 def client():
-    return PrefixRedis("test")
+    return PrefixRedis("test", **REDIS_CONFIG)
 
 
 class TestPrefixRedis:
