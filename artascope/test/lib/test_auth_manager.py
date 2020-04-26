@@ -18,7 +18,6 @@ from artascope.src.exception import (
     MissiCloudLoginCookie,
     UnableToSendCaptcha,
 )
-import artascope.src.lib.auth_manager as auth_manager
 from artascope.src.lib.auth_manager import (
     AuthManager,
     LoginStatus,
@@ -42,7 +41,7 @@ def am() -> AuthManager:
 def prepare_cookie_file() -> None:
     with open(Path(tempfile.gettempdir()) / "test_cookie", "w") as f:
         f.write(
-            'Set-Cookie3: X-APPLE-WEBAUTH-HSA-TRUST-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BQ==BST_IAAAAAAABLwIAAAAAF6LMq8RDmdzLmljbG91ZC5hdXRovQAJWyxlyRSJGCebu2GAUY3NPYxl4HYHuluB7fhMgT55QNtwdbt5AN3MP1wkPIjva6lAHH7cEJ0fxhokwubjciFGeHijihK_b_tmigi9Q3UkWGE0ZzTu9NUhGTOrn9VB-VnY56i5DC6faNa3ebirFEtq1YJ6mg~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-07-05 13:46:23Z"; HttpOnly=None; version=0\nSet-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-06-05 13:45:10Z"; HttpOnly=None; version=0'
+            '#LWP-Cookies-2.0\nSet-Cookie3: X-APPLE-WEBAUTH-HSA-TRUST-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BQ==BST_IAAAAAAABLwIAAAAAF6LMq8RDmdzLmljbG91ZC5hdXRovQAJWyxlyRSJGCebu2GAUY3NPYxl4HYHuluB7fhMgT55QNtwdbt5AN3MP1wkPIjva6lAHH7cEJ0fxhokwubjciFGeHijihK_b_tmigi9Q3UkWGE0ZzTu9NUhGTOrn9VB-VnY56i5DC6faNa3ebirFEtq1YJ6mg~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-07-05 13:46:23Z"; HttpOnly=None; version=0\nSet-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-06-05 13:45:10Z"; HttpOnly=None; version=0'
         )
 
 
@@ -52,10 +51,17 @@ TEMP_FILE_PATH = Path(tempfile.gettempdir()) / "test_cookie"
 
 
 class MockPyiCloudSession:
-    def __init__(self):
+    def __init__(self, api):
+        self.api = api
         self.cookies = cookielib.CookieJar()
         cookie = COOKIE(name="X-APPLE-WEBAUTH-HSA-LOGIN", path=".", domain="icloud.com")
         self.cookies.set_cookie(cookie)
+
+    def load_file_cookie(self):
+        self.cookies = cookielib.LWPCookieJar(
+            filename=str(self.api._get_cookiejar_path())
+        )
+        self.cookies.load()
 
 
 class MockPyiCloudService:
@@ -64,7 +70,7 @@ class MockPyiCloudService:
         self.password = password
         self.client_id = client_id
 
-        self.session = MockPyiCloudSession()
+        self.session = MockPyiCloudSession(self)
 
     @property
     def trusted_devices(self):
@@ -93,8 +99,15 @@ class MockPyiCloudService:
         return TEMP_FILE_PATH
 
 
-class MockCeleryTask:
+class MockSendSlackMsgTask:
     def delay(self, token, channel, msg):
+        raise DataException({"msg": msg})
+
+
+class MockSendEmailMsgTask:
+    def delay(
+        self, smtp_host, smtp_port, smtp_user, smtp_password, msg_from, msg_to, msg
+    ):
         raise DataException({"msg": msg})
 
 
@@ -189,10 +202,10 @@ class TestAuthManager:
         uc = UserConfig(
             icloud_username="username",
             icloud_password="password",
+            admin_url_prefix="test_url",
             notify_type=NotifyType.SLACK,
             slack_token="abcd",
             slack_channel="dev",
-            admin_url_prefix="test_url",
         )
         ucm.save(uc)
         am._icloud_api = MockPyiCloudService(
@@ -201,7 +214,41 @@ class TestAuthManager:
         monkeypatch.setattr(
             sys.modules["artascope.src.lib.msg_manager"],
             "send_slack_message",
-            MockCeleryTask(),
+            MockSendSlackMsgTask(),
+        )
+
+        data = {
+            "msg": "Goto {url_prefix}/user/captcha/username to enter your icloud HSA captcha!".format(
+                url_prefix=uc.admin_url_prefix, username="username"
+            )
+        }
+        with pytest.raises(DataException,) as exc_info:
+            am.send_captcha()
+        assert json.dumps(data, sort_keys=True) in str(exc_info.value)
+
+        assert am.get_login_status() == LoginStatus.CAPTCHA_SENT
+
+    def test_send_captcha_notify_email(self, am, monkeypatch):
+        uc = UserConfig(
+            icloud_username="username",
+            icloud_password="password",
+            admin_url_prefix="test_url",
+            notify_type=NotifyType.EMAIL,
+            smtp_host="mail.google.com",
+            smtp_port=456,
+            smtp_user="user",
+            smtp_password="password",
+            msg_from="msg_from",
+            msg_to="msg_to1;msg_to2",
+        )
+        ucm.save(uc)
+        am._icloud_api = MockPyiCloudService(
+            username="username", password="password", client_id="client_id"
+        )
+        monkeypatch.setattr(
+            sys.modules["artascope.src.lib.msg_manager"],
+            "send_email_message",
+            MockSendEmailMsgTask(),
         )
 
         data = {
@@ -278,6 +325,14 @@ class TestAuthManager:
         api = am.login()
         am.check_login_status()
         assert am.get_login_status() == LoginStatus.NEED_LOGIN_AGAIN
+
+    def test_hsa_trust_cookie(self, am, prepare_cookie_file):
+        am._icloud_api = MockPyiCloudService(
+            username="username", password="password", client_id="client_id"
+        )
+        am._icloud_api.session.load_file_cookie()
+        assert am.find_hsa_trust_cookie() is True
+        assert am.find_hsa_login_cookie() is False
 
     def test_clear_hsa_trust_cookie(self, am, prepare_cookie_file):
         am._icloud_api = MockPyiCloudService(

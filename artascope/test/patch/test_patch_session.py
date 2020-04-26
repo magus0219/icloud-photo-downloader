@@ -35,3 +35,18 @@ class TestPyiCloudSession:
         with pytest.raises(DataException,) as exc_info:
             api.session.post("url", data="abc")
         assert json.dumps(data, sort_keys=True) in str(exc_info.value)
+
+        data = {
+            "args": ["POST", "https://setup.icloud.com/setup/ws/1/login"],
+            "kwargs": {
+                "data": json.dumps({"abc": "abc", "extended_login": True}),
+                "json": None,
+            },
+        }
+
+        with pytest.raises(DataException,) as exc_info:
+            api.session.post(
+                "https://setup.icloud.com/setup/ws/1/login",
+                data=json.dumps({"abc": "abc"}),
+            )
+        assert json.dumps(data, sort_keys=True) in str(exc_info.value)

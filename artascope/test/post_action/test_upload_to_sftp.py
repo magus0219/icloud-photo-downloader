@@ -13,6 +13,7 @@ from artascope.src.model.user_config import UserConfig
 from artascope.src.lib.user_config_manager import ucm
 from artascope.src.task.post_action.sftp import upload_to_sftp
 from artascope.src.util.date_util import DateUtil
+from artascope.test.conftest import DataException
 
 
 class MockSSHClient:
@@ -69,19 +70,22 @@ def tgt_tempdir(request):
     return request.param
 
 
-class TestSFTP:
-    def test_upload_to_sftp(self, tgt_tempdir, monkeypatch):
-        uc = UserConfig(
-            icloud_username="username",
-            icloud_password="password",
-            sftp_host="127.0.0.1",
-            sftp_port=1000,
-            sftp_username="sftp_username",
-            sftp_password="sftp_password",
-            sftp_dir=str(tgt_tempdir),
-        )
-        ucm.save(uc)
+@pytest.fixture()
+def mock_user(tgt_tempdir):
+    uc = UserConfig(
+        icloud_username="username",
+        icloud_password="password",
+        sftp_host="127.0.0.1",
+        sftp_port=1000,
+        sftp_username="sftp_username",
+        sftp_password="sftp_password",
+        sftp_dir=str(tgt_tempdir),
+    )
+    ucm.save(uc)
 
+
+class TestSFTP:
+    def test_upload_to_sftp(self, mock_user, tgt_tempdir, monkeypatch):
         monkeypatch.setattr(paramiko.client, "SSHClient", MockSSHClient)
 
         filename = "testfile.jpg"
@@ -102,3 +106,21 @@ class TestSFTP:
         assert Path.exists(src_filepath) is False
         assert Path.stat(tgt_filepath).st_atime == created_date.timestamp()
         assert Path.stat(tgt_filepath).st_mtime == created_date.timestamp()
+
+    def test_connect_error(self, mock_user, tgt_tempdir, monkeypatch):
+        def mock_connect_error(self, hostname, port, username, password):
+            raise DataException({})
+
+        monkeypatch.setattr(MockSSHClient, "connect", mock_connect_error)
+        monkeypatch.setattr(paramiko.client, "SSHClient", MockSSHClient)
+
+        filename = "testfile.jpg"
+        src_filepath = Path(tempfile.gettempdir()) / filename
+        created_date = datetime.datetime(year=2019, month=12, day=31)
+        with pytest.raises(DataException,):
+            upload_to_sftp(
+                username="username",
+                src_filepath=str(src_filepath),
+                filename=filename,
+                created_dt=created_date,
+            )

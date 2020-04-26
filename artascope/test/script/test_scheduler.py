@@ -66,7 +66,9 @@ class TestScheduler:
     def test_trigger_sync_task_disable_scheduler(self, set_user_disable):
         assert trigger_sync_task(username="username") is False
 
-    def test_trigger_sync_task_enable_scheduler(self, set_user_enable, monkeypatch):
+    def test_trigger_sync_task_enable_scheduler_with_exception(
+        self, set_user_enable, monkeypatch
+    ):
         class MockSync:
             def delay(
                 self,
@@ -95,6 +97,26 @@ class TestScheduler:
         ):
             assert trigger_sync_task(username="username") is False
 
+    def test_trigger_sync_task_enable_scheduler_success(
+        self, set_user_enable, monkeypatch
+    ):
+        class MockSync:
+            def delay(
+                self,
+                username: str,
+                password: str,
+                last: int = None,
+                date_start: datetime.date = None,
+                date_end: datetime.date = None,
+            ):
+                assert date_start == DateUtil.get_today() - datetime.timedelta(days=2)
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.script.scheduler"], "sync", MockSync(),
+        )
+
+        assert trigger_sync_task(username="username") is True
+
     def test_update_user_job_not_existed(self):
         assert update_user_job(username="not_existed") is None
         assert sm.get_job_id(username="not_existed") is None
@@ -106,6 +128,11 @@ class TestScheduler:
     def test_update_user_job_enable_scheduler(self, set_user_enable):
         job_id = update_user_job(username="username")
         assert sm.get_job_id(username="username") == job_id
+
+    def test_update_user_job_existed(self, set_user_enable):
+        job_id = update_user_job(username="username")
+        job_id2 = update_user_job(username="username")
+        assert sm.get_job_id(username="username") == job_id2
 
     def test_start_no_user(self, monkeypatch):
         def mock_start(self):
@@ -128,23 +155,21 @@ class TestScheduler:
 
         monkeypatch.setattr(scheduler, "start", mock_start.__get__(scheduler))
 
-        def mock_time_sleep(seconds):
-            raise DataException({"msg": "sleep"})
+        class MockLogger:
+            def info(self, msg):
+                if "done" in msg:
+                    raise DataException({"msg": "info"})
 
-        monkeypatch.setattr(time, "sleep", mock_time_sleep)
-
-        def mock_update_user_job(username):
-            raise Exception({"error"})
+            def debug(self, msg):
+                raise DataException({"msg": "debug"})
 
         monkeypatch.setattr(
-            sys.modules["artascope.src.script.scheduler"],
-            "update_user_job",
-            mock_update_user_job,
+            sys.modules["artascope.src.script.scheduler"], "logger", MockLogger(),
         )
 
         sm.add_user("username")
 
-        data = {"msg": "sleep"}
+        data = {"msg": "debug"}
         with pytest.raises(DataException, match=json.dumps(data, sort_keys=True)):
             assert start()
         assert sm.get_user_cnt() == 1

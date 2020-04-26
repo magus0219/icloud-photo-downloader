@@ -2,22 +2,14 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/4
-import datetime
-import base64
 import pytest
 import sys
 from pyicloud.exceptions import PyiCloudAPIResponseException
-from pyicloud.services.photos import (
-    PhotoAsset,
-    PhotoAlbum,
-)
 from artascope.src.lib.task_manager import (
     tm,
     TaskRunType,
+    TaskStatus,
 )
-from artascope.src.lib.auth_manager import AuthManager
-from artascope.src.lib.user_config_manager import ucm
-from artascope.src.model.user_config import UserConfig
 from artascope.src.util import get_logger
 from artascope.src.task.sync import (
     sync,
@@ -26,6 +18,7 @@ from artascope.src.task.sync import (
 from artascope.src.exception import (
     NeedLoginAgain,
     ApiLimitExceed,
+    LoginTimeout,
 )
 from artascope.src.util.date_util import DateUtil
 from artascope.test.conftest import MOCK_PHOTO_DATA
@@ -37,6 +30,18 @@ logger = get_logger("test")
 def mock_calculate_offset_and_cnt(monkeypatch):
     def mock_calculate_offset_and_cnt(self, last=None, date_start=None, date_end=None):
         return len(MOCK_PHOTO_DATA) - 1, len(MOCK_PHOTO_DATA)
+
+    monkeypatch.setattr(
+        sys.modules["artascope.src.patch.pyicloud"],
+        "calculate_offset_and_cnt",
+        mock_calculate_offset_and_cnt,
+    )
+
+
+@pytest.fixture()
+def mock_calculate_offset_and_cnt_no_photo(monkeypatch):
+    def mock_calculate_offset_and_cnt(self, last=None, date_start=None, date_end=None):
+        return 0, 0
 
     monkeypatch.setattr(
         sys.modules["artascope.src.patch.pyicloud"],
@@ -149,3 +154,34 @@ class TestSync:
             sync.apply(
                 kwargs={"username": "username", "password": "password"}, throw=True,
             )
+
+    def test_sync_with_login_timeout(self, mock_login_captcha_wrong):
+        with pytest.raises(LoginTimeout,):
+            sync.apply(
+                kwargs={"username": "username", "password": "password"}, throw=True,
+            )
+
+    def test_no_photo_need_download(
+        self,
+        monkeypatch,
+        mock_login,
+        mock_calculate_offset_and_cnt_no_photo,
+        celery_app,
+        celery_worker,
+    ):
+        def mock_fetch_photos(self, offset, cnt):
+            return []
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.patch.pyicloud"],
+            "fetch_photos",
+            mock_fetch_photos,
+        )
+
+        task_name = celery_app.send_task(
+            "artascope.src.task.sync.sync",
+            kwargs={"username": "username", "password": "password"},
+        ).get(10)
+
+        assert tm.load_task(task_name=task_name).status == TaskStatus.SUCCESS
+        assert tm.get_current_task_name("username") is None

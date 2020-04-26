@@ -88,14 +88,15 @@ class TaskManager:
         tasks = self._redis.lrange(
             "{key}:{task_name}".format(key=CELERY_TASK_KEY, task_name=task_name), 0, -1
         )
+
+        if self.get_current_task_name(task.username) == task_name:
+            self.clear_current_task_name(task.username)
+
         for one_task_id in tasks:
             one_task_id = one_task_id.decode("utf8")
             from artascope.src.celery_app import app
 
             AsyncResult(one_task_id, backend=app.backend).revoke(terminate=True)
-
-        if self.get_current_task_name(task.username) == task_name:
-            self.clear_current_task_name(task.username)
 
         MsgManager.send_message(
             username=task.username,

@@ -82,6 +82,8 @@ def captcha(username):
 def send_captcha(username):
     try:
         auth = AuthManager(username)
+        # get api
+        auth.login()
         auth.prepare_to_login_again()
         # will send captcha for status is NEED_LOGIN_AGAIN
         auth.login()

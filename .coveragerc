@@ -1,0 +1,12 @@
+[run]
+include =
+	artascope/src/*
+omit =
+	artascope/src/config/*
+	artascope/src/util/slack_sender.py
+	artascope/src/util/email_sender.py
+	artascope/src/wsgi.py
+
+[report]
+exclude_lines =
+	pragma: no cover

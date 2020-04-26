@@ -5,6 +5,8 @@
 import base64
 import pytest
 import datetime
+import sys
+import json
 from pyicloud.services.photos import PhotoAsset
 from celery.result import AsyncResult
 from artascope.src.lib.task_manager import (
@@ -18,6 +20,7 @@ from artascope.src.exception import (
     TaskNotExisted,
     FileStatusNotExisted,
 )
+from artascope.test.conftest import DataException
 
 
 @pytest.fixture()
@@ -42,6 +45,21 @@ def photo_asset2():
         },
     }
     return PhotoAsset({}, master_record, {})
+
+
+@pytest.fixture()
+def mock_async_result(monkeypatch):
+    class MockAsyncResult:
+        def __init__(self, task_id, backend):
+            self.task_id = task_id
+            self.backend = backend
+
+        def revoke(self, terminate=True):
+            raise DataException({"task_id": self.task_id})
+
+    monkeypatch.setattr(
+        sys.modules["artascope.src.lib.task_manager"], "AsyncResult", MockAsyncResult
+    )
 
 
 class TestTaskManager:
@@ -94,11 +112,15 @@ class TestTaskManager:
         assert tm.load_task(task_name="test_name").status == TaskStatus.SUCCESS
         assert tm.get_current_task_name(username="test_username") is None
 
-    def test_fail_task(self):
+    def test_fail_task(self, mock_async_result):
         tm.add_task(
             task_name="test_name", username="test_username", run_type=TaskRunType.ALL
         )
-        tm.fail_task(task_name="test_name")
+        tm.attach_celery_task_id("test_name", "celery_task_id")
+        data = {"task_id": "celery_task_id"}
+        with pytest.raises(DataException,) as exc_info:
+            tm.fail_task(task_name="test_name")
+        assert json.dumps(data, sort_keys=True) in str(exc_info.value)
         assert tm.load_task(task_name="test_name").status == TaskStatus.FAIL
         assert tm.get_current_task_name(username="test_username") is None
 

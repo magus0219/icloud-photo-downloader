@@ -45,7 +45,7 @@ fi
 if [[ "$1" = 'test' ]]; then
 	# run test
 	echo "run test"
-	python -m pytest --cov-report term  --cov=artascope/src
+	python -m pytest --cov=artascope/src --cov-report term
 	echo "test result" "$?"
 	exit "$?"
 fi

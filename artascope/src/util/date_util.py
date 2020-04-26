@@ -45,7 +45,7 @@ class DateTimeUtil:
         return datetime.datetime.strftime(datetime_obj, "%Y-%m-%d %H:%M:%S")
 
     @classmethod
-    def get_now(cls):
+    def get_now(cls):  # pragma: no cover
         return datetime.datetime.now()
 
     @classmethod

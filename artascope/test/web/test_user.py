@@ -15,6 +15,7 @@ from artascope.src.lib.task_manager import (
     tm,
     TaskRunType,
 )
+from artascope.test.conftest import MockPyiCloudService
 
 MOCK_NEW_USER = {
     "icloud_username": "account_name",
@@ -45,6 +46,29 @@ MOCK_NEW_USER = {
 def response(client):
     response = client.post("/user/edit/", data=MOCK_NEW_USER, follow_redirects=True)
     return response
+
+
+@pytest.fixture()
+def mock_login(monkeypatch):
+    def mock_login(self):
+        self._icloud_api = MockPyiCloudService(
+            username="username", password="password", client_id="client_id"
+        )
+        status = self.get_login_status()
+        if status == LoginStatus.NEED_LOGIN_AGAIN:
+            self.set_login_status(LoginStatus.CAPTCHA_SENT)
+
+        return self._icloud_api
+
+    monkeypatch.setattr(AuthManager, "login", mock_login)
+
+
+@pytest.fixture()
+def mock_login_exception(monkeypatch):
+    def mock_login(self):
+        raise Exception("error")
+
+    monkeypatch.setattr(AuthManager, "login", mock_login)
 
 
 @pytest.mark.web
@@ -308,3 +332,19 @@ class TestUser:
         )
 
         # TODO how to check sync is called
+
+    def test_send_captcha_again(self, client, response, mock_login):
+        response = client.get(
+            "/user/send_captcha/{}".format(MOCK_NEW_USER["icloud_username"]),
+        )
+        assert b"Captcha has been sent." in response.data
+        assert (
+            AuthManager(username="account_name").get_login_status()
+            == LoginStatus.CAPTCHA_SENT
+        )
+
+    def test_send_captcha_again_exception(self, client, response, mock_login_exception):
+        response = client.get(
+            "/user/send_captcha/{}".format(MOCK_NEW_USER["icloud_username"]),
+        )
+        assert b"error" in response.data

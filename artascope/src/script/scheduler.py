@@ -116,8 +116,8 @@ def start():
         while username:
             try:
                 update_user_job(username)
-                logger.info("handle {username} done".format(username=username))
                 export_job_info()
+                logger.info("handle {username} done".format(username=username))
             except Exception as e:
                 fail_user.append(username)
                 logger.info("handle {username} fail".format(username=username))
@@ -131,6 +131,6 @@ def start():
             logger.debug("sleep done...")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     logger.info("Scheduler start...")
     start()

@@ -71,6 +71,7 @@ def task_exception_handler(auth: AuthManager):
     except ApiLimitExceed as e:
         logger.info("need slow down in download_file")
         time.sleep(SECONDS_WAIT_FOR_API_LIMIT)
+        print("here ", SECONDS_WAIT_FOR_API_LIMIT)
         raise
     except PyiCloudAPIResponseException as e:
         auth.check_login_status()

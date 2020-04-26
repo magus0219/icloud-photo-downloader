@@ -46,7 +46,7 @@ def patch_photo_asset() -> None:
 
 def __list_query_gen_simple(
     self, offset: int, list_type: str, direction: str, query_filter=None
-) -> dict:
+) -> dict:  # pragma: no cover
     """A method to get simple info of photos to support date filter function
 
     :param self:
@@ -282,7 +282,7 @@ def fetch_photos(
                 else:
                     break
         else:
-            break
+            break  # pragma: no cover
 
 
 def patch_photo_album():

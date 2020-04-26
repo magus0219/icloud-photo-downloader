@@ -38,7 +38,7 @@ from artascope.src.exception import (
     LoginTimeout,
     Gone,
 )
-from artascope.test.task.conftest import MockPyiCloudService
+from artascope.test.conftest import MockPyiCloudService
 from artascope.test.conftest import DataException
 from artascope.src.util import get_logger
 

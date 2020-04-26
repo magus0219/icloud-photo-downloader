@@ -3,7 +3,7 @@ clean :
 	rm -rf *.log
 
 test : clean
-	python -m pytest --cov-report term --cov-report html:cov_html --cov=artascope/src
+	ARTASCOPE_ENV=localtest pipenv run pytest --cov=artascope/src --cov-report term --cov-report html:cov_html
 
 check:
 	pre-commit run --all-file
