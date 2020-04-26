@@ -10,8 +10,11 @@ check:
 
 release:
 	@echo tag $(VER)
-	@echo $(VER) > .project_version
+	@echo -n $(VER) > .project_version
 	git add .project_version
 	git commit .project_version -m "release new version $(VER)"
 	git tag -a -m "release new version $(VER)" $(VER)
 	git push origin --follow-tags
+
+web:
+	ARTASCOPE_ENV=localtest FLASK_APP=artascope/src/wsgi.py pipenv run flask run --host=0.0.0.0

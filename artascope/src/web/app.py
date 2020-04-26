@@ -2,20 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/3/23
-import uuid
-import copy
 from types import FunctionType
-from flask import (
-    Flask,
-    request,
-    render_template,
-    redirect,
-    url_for,
-)
-import artascope.src.web.filter as module_filter
+from flask import Flask
+import artascope.src.web.lib.filter as module_filter
+from artascope.src.web.lib.content_processor import inject_version
 
 
-def create_app(test_config=None):
+def create_app():
     # create and configure the app
     app = Flask(__name__)
     app.jinja_env.filters.update(
@@ -34,4 +27,5 @@ def create_app(test_config=None):
     app.register_blueprint(task.bp)
     app.register_blueprint(scheduler.bp)
 
+    app.context_processor(inject_version)
     return app
