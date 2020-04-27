@@ -5,6 +5,7 @@ repos:
   - id: trailing-whitespace
     exclude: .*\.md$
   - id: end-of-file-fixer
+    exclude: .version
   - id: check-yaml
     args: [--allow-multiple-documents]
   - id: check-added-large-files

@@ -7,6 +7,6 @@ from pathlib import Path
 
 def inject_version():
     print(__file__)
-    with open(Path(__file__).parent / "../../../../.project_version") as f:
+    with open(Path(__file__).parent / "../../../../.version") as f:
         ver_str = f.read()
     return {"version": ver_str}

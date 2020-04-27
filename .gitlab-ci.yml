@@ -68,7 +68,7 @@ release_to_docker_hub:
     - docker login -u $DOCKER_HUB_REGISTRY_USER -p $DOCKER_HUB_REGISTRY_PASSWORD
   stage: release
   script:
-    - export VERSION=`cat .project_version`
+    - export VERSION=`cat .version`
     - echo release ${VERSION}
     - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:${VERSION}
     - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
