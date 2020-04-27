@@ -4,9 +4,9 @@
 # Created by magus0219[magus0219@gmail.com] on 2020/3/25
 import datetime
 import pytz
-from artascope.src.config import TIMEZONE
+from artascope.src.config import TZ
 
-tz = pytz.timezone(TIMEZONE)
+tz = pytz.timezone(TZ)
 
 
 def unixtime_to_str(val: int, format_str="%Y-%m-%d %H:%M:%S"):

@@ -3,7 +3,12 @@
 Artascope is a project to sync iCloud Photos to your own device (e.g. NAS).
 It wrapped [picklepete/pyicloud](https://github.com/picklepete/pyicloud) with celery and offer a simple WEB UI.
 
-Initial motivation of this project is to automatically sync iCloud photos to my NAS(Synology 918+) and browse them by Synology Moments.
+## Motivation
+I used to take photos by iPhone and iCloud complains not enough storage space soon.
+After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manager my pictures. But they also have shortcomings:
+1. Upload occurs only opening Apps
+2.
+
 
 ## Features
 #### Simple UI to set up account info and running configuration

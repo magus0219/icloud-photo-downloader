@@ -13,7 +13,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from artascope.src.lib.scheduler_manager import sm
 from artascope.src.config import (
     REDIS_CONFIG,
-    TIMEZONE,
+    TZ,
     SECONDS_SLEEP_SCHEDULER,
 )
 from artascope.src.task.sync import sync
@@ -24,7 +24,7 @@ from artascope.src.util import get_logger
 
 logger = get_logger("server.scheduler")
 
-tz = pytz.timezone(TIMEZONE)
+tz = pytz.timezone(TZ)
 
 jobstores = {"default": RedisJobStore(**REDIS_CONFIG)}
 executors = {

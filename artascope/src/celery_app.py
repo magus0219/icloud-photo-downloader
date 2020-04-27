@@ -6,7 +6,7 @@ from celery import Celery
 from celery.schedules import crontab
 from artascope.src.config import (
     REDIS_CONFIG,
-    TIMEZONE,
+    TZ,
 )
 from artascope.src.util import get_logger
 
@@ -27,7 +27,7 @@ app = Celery(
 
 # Optional configuration, see the application user guide.
 app.conf.update(
-    timezone=TIMEZONE,
+    timezone=TZ,
     result_expires=3600,
     task_serializer="pickle",
     result_serializer="pickle",

@@ -25,7 +25,7 @@ SECONDS_WAIT_LOGIN = 60 * 15
 
 SECONDS_SLEEP_SCHEDULER = 30
 
-TIMEZONE = "Asia/Shanghai"
+TZ = "Asia/Shanghai"
 
 LOG_CONFIG = {
     "version": 1,

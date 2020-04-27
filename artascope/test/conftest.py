@@ -10,7 +10,7 @@ import json
 from pyicloud.services.photos import PhotoAsset
 from artascope.src.config import (
     REDIS_CONFIG,
-    TIMEZONE,
+    TZ,
 )
 from artascope.src.util.date_util import DateTimeUtil
 from artascope.src.lib.task_manager import (
@@ -136,7 +136,7 @@ def celery_config():
     return {
         "broker_url": "redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
         "result_backend": "redis://{host}:{port}/{db}".format(**REDIS_CONFIG),
-        "timezone": TIMEZONE,
+        "timezone": TZ,
         "result_expires": 3600,
         "task_serializer": "pickle",
         "result_serializer": "pickle",

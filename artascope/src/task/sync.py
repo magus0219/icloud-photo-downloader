@@ -11,7 +11,7 @@ from artascope.src.util import get_logger
 from artascope.src.config import (
     BATCH_CNT,
     API_PAGE_SIZE,
-    TIMEZONE,
+    TZ,
 )
 from artascope.src.lib.task_manager import (
     tm,
@@ -31,7 +31,7 @@ from artascope.src.util.date_util import DateTimeUtil
 
 logger = get_logger("server")
 
-tz = pytz.timezone(TIMEZONE)
+tz = pytz.timezone(TZ)
 
 
 def decide_run_type(

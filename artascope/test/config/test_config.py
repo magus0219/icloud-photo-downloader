@@ -4,10 +4,10 @@
 # Created by magus0219[magus0219@gmail.com] on 2020/4/23
 class TestConfig:
     def test_config_base(self):
-        from artascope.src.config import TIMEZONE
-        from artascope.src.config.base import TIMEZONE as TIMEZONE_BASE
+        from artascope.src.config import TZ
+        from artascope.src.config.base import TZ as TIMEZONE_BASE
 
-        assert TIMEZONE == TIMEZONE_BASE
+        assert TZ == TIMEZONE_BASE
 
     def test_config_overwrite_by_file(self):
         import os

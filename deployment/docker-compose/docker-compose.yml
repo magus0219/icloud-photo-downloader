@@ -15,7 +15,7 @@ services:
     restart: always
     environment:
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     ports:
       - "${ARTASCOPE_WEB_PORT:-16666}:16666"
     command: ["web"]
@@ -34,7 +34,7 @@ services:
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     command: ["celery_worker_main"]
     depends_on:
       - redis
@@ -50,7 +50,7 @@ services:
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     command: ["celery_worker_upload"]
     depends_on:
       - redis
@@ -66,7 +66,7 @@ services:
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     command: ["celery_worker_msg"]
     depends_on:
       - redis
@@ -80,7 +80,7 @@ services:
     environment:
       - C_FORCE_ROOT=True
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     ports:
       - "${ARTASCOPE_FLOWER_PORT:-5555}:5555"
     command: ["celery_flower"]
@@ -95,7 +95,7 @@ services:
     restart: always
     environment:
       - ARTASCOPE_ENV=${ARTASCOPE_ENV:-prod_docker_compose}
-      - TIMEZONE=${TIMEZONE:-UTC}
+      - TZ=${TZ:-UTC}
     command: ["scheduler"]
     depends_on:
       - redis
