@@ -45,7 +45,6 @@ def user_edit(username=None):
         user_setting = ucm.load(data["icloud_username"])
         if not user_setting:
             user_setting = UserConfig(data["icloud_username"], data["icloud_password"])
-
         for key, value in user_setting.__dict__.items():
             if key in data and data[key] not in ("None", ""):
                 if key in (
@@ -55,6 +54,7 @@ def user_edit(username=None):
                     "smtp_port",
                     "scheduler_enable",
                     "scheduler_last_day_cnt",
+                    "reindex_enable",
                 ):
                     setattr(user_setting, key, int(data[key]))
                 else:

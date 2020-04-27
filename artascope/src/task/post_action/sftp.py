@@ -85,6 +85,20 @@ def upload_to_sftp(
         sftp_client.put(src_filepath, str(tgt_filepath))
         modify_meta(sftp_client, str(tgt_filepath), created_dt)
 
+        if user_setting.reindex_enable:
+            print("here")
+            try:
+                cmd = "/var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool -t reindex -i {target_path}".format(
+                    target_path=str(
+                        Path(user_setting.sftp_home)
+                        / user_setting.sftp_dir
+                        / date_folder
+                    )
+                )
+                ssh_client.exec_command(cmd)
+            except Exception as e:
+                logger.exception(e)
+
         os.remove(src_filepath)
     except Exception as e:
         logger.exception(e)

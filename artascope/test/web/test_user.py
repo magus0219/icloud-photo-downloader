@@ -118,6 +118,10 @@ class TestUser:
             in response.data
         )
         assert (
+            b'<input class="form-check-input" type="checkbox" name="reindex_enable" value="1" id="reindexCheck" checked>'
+            in response.data
+        )
+        assert (
             b'<input class="form-check-input" type="radio" name="notify_type" id="Slack" value=1 >'
             in response.data
         )

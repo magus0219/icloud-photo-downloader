@@ -87,9 +87,21 @@
                     <input type="text" class="form-control" id="SFTPPassword" name="sftp_password" value="{{ sftp_password }}" placeholder="********">
                 </div>
                 <div class="form-group">
-                    <label for="SFTPDir">Home Directory</label>
+                    <label for="SFTPDir">Directory(Relative to SFTP Home)</label>
                     {% set sftp_dir=user_setting.sftp_dir if user_setting else "" %}
                     <input type="text" class="form-control" id="SFTPDir" name="sftp_dir" value="{{ sftp_dir }}" placeholder="/home/dir">
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        {% set checked='checked' if not user_setting or user_setting.reindex_enable==1 else "" %}
+                        <input class="form-check-input" type="checkbox" name="reindex_enable" value="1" id="reindexCheck" {{ checked }}>
+                        <label for="reindexCheck">Reindex in Synology Moments</label>
+                    </div>
+                    <label for="SFTPHome">SFTP Home</label>
+                    {% set sftp_home=user_setting.sftp_home if user_setting else "" %}
+                    <input type="text" class="form-control" id="SFTPHome" name="sftp_home" value="{{ sftp_home }}" placeholder="/sftp/home">
+
+
                 </div>
             </div>
         </div>

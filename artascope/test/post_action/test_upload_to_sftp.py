@@ -5,15 +5,20 @@
 import tempfile
 import paramiko
 import os
+import sys
 import shutil
 import datetime
 import pytest
+import json
 from pathlib import Path
 from artascope.src.model.user_config import UserConfig
 from artascope.src.lib.user_config_manager import ucm
 from artascope.src.task.post_action.sftp import upload_to_sftp
 from artascope.src.util.date_util import DateUtil
-from artascope.test.conftest import DataException
+from artascope.test.conftest import (
+    DataException,
+    CustomEncoder,
+)
 
 
 class MockSSHClient:
@@ -28,6 +33,9 @@ class MockSSHClient:
 
     def close(self):
         return True
+
+    def exec_command(self, cmd):
+        raise DataException({"cmd": cmd})
 
 
 class MockSFTPClient:
@@ -84,6 +92,22 @@ def mock_user(tgt_tempdir):
     ucm.save(uc)
 
 
+@pytest.fixture()
+def mock_user_reindex(tgt_tempdir):
+    uc = UserConfig(
+        icloud_username="username",
+        icloud_password="password",
+        sftp_host="127.0.0.1",
+        sftp_port=1000,
+        sftp_username="sftp_username",
+        sftp_password="sftp_password",
+        sftp_dir=str(tgt_tempdir),
+        reindex_enable=1,
+        sftp_home="/sftp_home",
+    )
+    ucm.save(uc)
+
+
 class TestSFTP:
     def test_upload_to_sftp(self, mock_user, tgt_tempdir, monkeypatch):
         monkeypatch.setattr(paramiko.client, "SSHClient", MockSSHClient)
@@ -124,3 +148,41 @@ class TestSFTP:
                 filename=filename,
                 created_dt=created_date,
             )
+
+    def test_reindex(self, mock_user_reindex, tgt_tempdir, monkeypatch):
+        class MockLogger:
+            def info(self, msg):
+                return True
+
+            def debug(self, msg):
+                return True
+
+            def exception(self, e):
+                raise e
+
+        monkeypatch.setattr(
+            sys.modules["artascope.src.task.post_action.sftp"], "logger", MockLogger()
+        )
+        monkeypatch.setattr(paramiko.client, "SSHClient", MockSSHClient)
+
+        filename = "testfile.jpg"
+        src_filepath = Path(tempfile.gettempdir()) / filename
+        created_date = datetime.datetime(year=2019, month=12, day=31)
+        with open(src_filepath, "w") as f:
+            f.write("testfile")
+
+        data = {
+            "cmd": "/var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool -t reindex -i {path}".format(
+                path=str(Path("/home") / tgt_tempdir / "2019-12-31")
+            )
+        }
+        with pytest.raises(DataException,) as exc_info:
+            upload_to_sftp(
+                username="username",
+                src_filepath=str(src_filepath),
+                filename=filename,
+                created_dt=created_date,
+            )
+        assert json.dumps(data, sort_keys=True, cls=CustomEncoder) in str(
+            exc_info.value
+        )

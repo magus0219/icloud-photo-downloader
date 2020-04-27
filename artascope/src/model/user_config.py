@@ -20,6 +20,11 @@ class SchedulerEnable:
     Enable = 1
 
 
+class ReindexEnable:
+    Disable = 0
+    Enable = 1
+
+
 class UserConfig(JsonDataMixin):
     def __init__(
         self,
@@ -31,6 +36,8 @@ class UserConfig(JsonDataMixin):
         sftp_username: str = None,
         sftp_password: str = None,
         sftp_dir: str = None,
+        reindex_enable: int = ReindexEnable.Disable,
+        sftp_home: str = None,
         admin_url_prefix: str = None,
         notify_type: int = NotifyType.NONE,
         slack_token: str = None,
@@ -55,6 +62,8 @@ class UserConfig(JsonDataMixin):
         self.sftp_username = sftp_username
         self.sftp_password = sftp_password
         self.sftp_dir = sftp_dir
+        self.reindex_enable = reindex_enable
+        self.sftp_home = sftp_home
 
         self.admin_url_prefix = admin_url_prefix
 
