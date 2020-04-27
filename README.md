@@ -92,10 +92,13 @@ If you need to sync photos to Synology NAS and reindex them like me, the followi
    You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
 
 2. Add your account to SynologyMoments group
+
    SSH to NAS and run shell command
+
    ```bash
    synogroup --member SynologyMoments <account>
    ```
+
    Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
 
 ### Add User
