@@ -18,6 +18,10 @@ from artascope.test.conftest import DataException
 
 @pytest.mark.web
 class TestTask:
+    def test_index(self, client):
+        response = client.get("/", follow_redirects=True)
+        assert b"Task List" in response.data  # test jumbotron
+
     def test_task_without_content(self, client):
         response = client.get("/task", follow_redirects=True)
         assert b"Task List" in response.data  # test jumbotron
