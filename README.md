@@ -1,19 +1,25 @@
 # Artascope
 
-Artascope is a project to sync iCloud Photos to your own device (e.g. NAS).
+Artascope is a project to sync iCloud photos to your device (e.g. NAS).
 It wrapped [picklepete/pyicloud](https://github.com/picklepete/pyicloud) with celery and offer a simple WEB UI.
 
 ## Motivation
 I used to take photos by iPhone and iCloud complains not enough storage space soon.
-After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manager my pictures. But they still have shortcomings:
-1. Upload only occurs when Apps are open
-2. It
 
+After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manage my pictures. But they still have shortcomings:
+1. Upload only occurs when you open Apps
+2. It may crash if iCloud Photo's metadata have some problems
+
+So what I what is an automatic and stable background job to backup my photos from iCloud to NAS.
+
+## Challenge
+1. I can not automate 2SA verification of Apple if the iPhone is not broken out of jail
+2. If the same photos are uploaded multi times. Metadata like thumbnails are broken in Moments for they need reindex.
 
 ## Features
 #### Simple UI to set up account info and running configuration
 #### Support filter photos by date/last count
-#### Sync photos to remote sftp server
+#### Sync photos to remote sftp server and trigger reindex process in Synology NAS
 #### Resume broken transfer during downloading photos
 #### Simple notification by slack channel or email
 #### Support schedule sync tasks using crontab expression
@@ -59,7 +65,7 @@ Use the [Kubernetes](https://kubernetes.io/) to install artascope.
 
 2. Modify service.yaml to adapt for your k8s cluster if needed(e.g. ingress)
 
-3. Apply k8s yaml
+3. Apply k8s YAML
 ```bash
 kubectl apply -f build/namespace.yaml
 kubectl apply -f build/
@@ -79,6 +85,19 @@ kubectl delete -f build/
 ```
 
 ## Usage
+### Preparation
+If you need to sync photos to Synology NAS and reindex them like me, the following steps needed:
+1. Activate SFTP
+
+   You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
+
+2. Add your account to SynologyMoments group
+   SSH to NAS and run shell command
+   ```bash
+   synogroup --member SynologyMoments <account>
+   ```
+   Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
+
 ### Add User
 Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Add' button.
 
@@ -91,16 +110,19 @@ Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Add' button.
 | 5 |SFTP Port| 22 | Target SFTP Port |
 | 6 |SFTP User| somebody | Target SFTP Username |
 | 7 |SFTP Password| **** | Target SFTP Password |
-| 8 |Slack Token | **** | Token used by your slack app |
-| 9 |Channel Name | channel | Which slack channel message will be send to |
-| 10 |SMTP Host| smtp.google.com | SMTP Host |
-| 11 |SMTP Port| 465 | SMTP Port |
-| 12 |SMTP Username| somebody | SMTP Username |
-| 13 |SMTP Password| **** | SMTP Password |
-| 14 |Email From| somebody@domain.com | Email sender |
-| 15 |Email To| somebody@domain.com;somebody@domain.com | Email Receivers |
-| 16 |Trigger Time| 0 1 * * * | Crontab Expression Format: min hour day month weekday |
-| 17 |Sync Photos of Recently Days| 3 | Sync photos of last *cnt* days|
+| 8 |Directory(Relative to SFTP Home)| Drive/Moments/Mobile/iphone | Where you should store your photos relative to your SFTP home |
+| 9 |Reindex in Synology Moments| on | Check on if you need browse photos in Synology Moment |
+| 10 |SFTP Home| /volume1/homes/<account> | Your SFTP root, absolute path needed when trigger reindex |
+| 11 |Slack Token | **** | Token used by your slack app |
+| 12 |Channel Name | channel | Which slack channel message will be send to |
+| 13 |SMTP Host| smtp.google.com | SMTP Host |
+| 14 |SMTP Port| 465 | SMTP Port |
+| 15 |SMTP Username| somebody | SMTP Username |
+| 16 |SMTP Password| **** | SMTP Password |
+| 17 |Email From| somebody@domain.com | Email sender |
+| 18 |Email To| somebody@domain.com;somebody@domain.com | Email Receivers |
+| 19 |Trigger Time| 0 1 * * * | Crontab Expression Format: min hour day month weekday |
+| 20 |Sync Photos of Recently Days| 3 | Sync photos of last *cnt* days|
 
 ### Run task
 Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Run' button.
@@ -111,6 +133,15 @@ Select Run type:
 | 1 | All | download all photos in iCloud |
 | 2 | Last | download last *Cnt* photos |
 | 3 | DateRange | download photos filtered by date range |
+
+### Verify Captcha
+Apple will send you captcha when this project is set up.
+
+Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Captcha' button to enter your captcha.
+
+If you enter the wrong captcha(Login status of User will be *Captcha Fail*), just enter again.
+
+If the captcha is timeout, you can click the 'Send Again' button to launch another login process.
 
 ### Check task status
 Open Web admin(http://{admin_host}:{admin:port}/task/) and click specific task.
@@ -126,7 +157,15 @@ Open Web admin(http://{admin_host}:{admin:port}/scheduler/) to see next trigger 
 2. Security
 
    Your iCloud Account and Password are stored in redis.
-   The web UI is crude and simple. It is better to setup a https reverse-proxy in front of it.
+   The web UI is crude and simple. It is better to set up an https reverse-proxy in front of it or not expose it to the Internet.
+
+## How to Test
+Assume you have docker:
+```bash
+docker run --name redis-antascope-local-test -d -p 6379:6379 redis
+make test
+```
+Change redis port in *artascope/src/config/localtest.py* if needed.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
