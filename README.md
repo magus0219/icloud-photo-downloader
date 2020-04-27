@@ -5,9 +5,9 @@ It wrapped [picklepete/pyicloud](https://github.com/picklepete/pyicloud) with ce
 
 ## Motivation
 I used to take photos by iPhone and iCloud complains not enough storage space soon.
-After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manager my pictures. But they also have shortcomings:
-1. Upload occurs only opening Apps
-2.
+After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manager my pictures. But they still have shortcomings:
+1. Upload only occurs when Apps are open
+2. It
 
 
 ## Features
