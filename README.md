@@ -88,17 +88,17 @@ kubectl delete -f build/
 ### Preparation
 If you need to sync photos to Synology NAS and reindex them like me, the following steps needed:
 
-#### Activate SFTP
-You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
+1. Activate SFTP  
+    You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
 
-#### Add your account to SynologyMoments group
-SSH to NAS and run shell command
+2. Add your account to SynologyMoments group  
+    SSH to NAS and run shell command  
 
-```bash
-synogroup --member SynologyMoments <account>
-```
+    ```bash
+    synogroup --member SynologyMoments <account>
+    ```  
 
-Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
+    Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
 
 ### Add User
 Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Add' button.
@@ -152,12 +152,11 @@ Open Web admin(http://{admin_host}:{admin:port}/task/) and click specific task.
 Open Web admin(http://{admin_host}:{admin:port}/scheduler/) to see next trigger time of tasks.
 
 ### Restrictions
-#### Live Photos are missing
+1. Live Photos are missing  
 Improvement needed in picklepete/pyicloud to support downloading live photos.
 
-#### Security
-Your iCloud Account and Password are stored in redis.
-
+2. Security  
+Your iCloud Account and Password are stored in redis.  
 The web UI is crude and simple. It is better to set up an https reverse-proxy in front of it or not expose it to the Internet.
 
 ## How to Test
