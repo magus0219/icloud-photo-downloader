@@ -87,19 +87,18 @@ kubectl delete -f build/
 ## Usage
 ### Preparation
 If you need to sync photos to Synology NAS and reindex them like me, the following steps needed:
-1. Activate SFTP
 
-   You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
+#### Activate SFTP
+You can activate SFTP in Control Panel -> File Service -> FTP, remember to change user root directory.
 
-2. Add your account to SynologyMoments group
+#### Add your account to SynologyMoments group
+SSH to NAS and run shell command
 
-   SSH to NAS and run shell command
+```bash
+synogroup --member SynologyMoments <account>
+```
 
-   ```bash
-   synogroup --member SynologyMoments <account>
-   ```
-
-   Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
+Because we revoke */var/packages/SynologyMoments/target/usr/bin/synophoto-bin-index-tool* to trigger reindex.
 
 ### Add User
 Open Web admin(http://{admin_host}:{admin:port}/user/) and click 'Add' button.
