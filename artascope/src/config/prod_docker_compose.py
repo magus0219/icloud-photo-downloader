@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/16
+DEBUG = False
 REDIS_CONFIG = {
     "host": "redis",
     "port": 6379,

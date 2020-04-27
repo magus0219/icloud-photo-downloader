@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 #
 # Created by magus0219[magus0219@gmail.com] on 2020/4/8
+DEBUG = True
+
 REDIS_CONFIG = {"host": "127.0.0.1", "port": 6379, "db": 1}
 
 API_LATCH_LIMIT_PER_MINUTE = 30
