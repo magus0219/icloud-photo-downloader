@@ -10,7 +10,7 @@ check:
 
 release:
 	@echo tag $(VER)
-	@echo -n $(VER) > .project_version
+	@/bin/echo -n $(VER) > .project_version
 	git add .project_version
 	git commit .project_version -m "release new version $(VER)"
 	git tag -a -m "release new version $(VER)" $(VER)
