@@ -24,7 +24,7 @@ from artascope.src.util import get_logger
 
 logger = get_logger("server.scheduler")
 
-tz_shanghai = pytz.timezone(TIMEZONE)
+tz = pytz.timezone(TIMEZONE)
 
 jobstores = {"default": RedisJobStore(**REDIS_CONFIG)}
 executors = {
@@ -32,10 +32,7 @@ executors = {
 }
 job_defaults = {"coalesce": False, "max_instances": 3}
 scheduler = BackgroundScheduler(
-    jobstores=jobstores,
-    executors=executors,
-    job_defaults=job_defaults,
-    timezone=tz_shanghai,
+    jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=tz,
 )
 
 CRON_ELEMENTS = ["minute", "hour", "day", "month", "day_of_week"]
@@ -93,7 +90,9 @@ def update_user_job(username: str) -> typing.Union[None, str]:
 
     user_setting = ucm.load(username)
     if user_setting and user_setting.scheduler_enable == SchedulerEnable.Enable:
-        trigger = CronTrigger(**extract_cron_expression(user_setting.scheduler_crontab))
+        trigger = CronTrigger(
+            **extract_cron_expression(user_setting.scheduler_crontab), timezone=tz
+        )
         job = scheduler.add_job(
             func=trigger_sync_task, trigger=trigger, kwargs={"username": username,}
         )

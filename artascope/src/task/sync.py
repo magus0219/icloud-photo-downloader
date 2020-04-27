@@ -31,7 +31,7 @@ from artascope.src.util.date_util import DateTimeUtil
 
 logger = get_logger("server")
 
-tz_shanghai = pytz.timezone(TIMEZONE)
+tz = pytz.timezone(TIMEZONE)
 
 
 def decide_run_type(
@@ -120,9 +120,7 @@ def sync(
             for photo in photos:
                 tm.add_file_status(task_name, photo)
                 logger.debug(
-                    "{}:{}".format(
-                        photo.filename, photo.created.astimezone(tz_shanghai)
-                    )
+                    "{}:{}".format(photo.filename, photo.created.astimezone(tz))
                 )
                 batch.append(photo)
 
