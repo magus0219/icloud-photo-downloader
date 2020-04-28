@@ -7,7 +7,7 @@ It wrapped [picklepete/pyicloud](https://github.com/picklepete/pyicloud) with ce
 I used to take photos by iPhone and iCloud complains not enough storage space soon.
 
 After got one NAS(Synology 918+) I started to use Synology Moments/Photo Station to manage my pictures. But they still have shortcomings:
-1. Upload only occurs when you open Apps
+1. Uploading only occurs when you open Apps
 2. It may crash if iCloud Photo's metadata have some problems
 
 So what I what is an automatic and stable background job to backup my photos from iCloud to NAS.
@@ -17,12 +17,12 @@ So what I what is an automatic and stable background job to backup my photos fro
 2. If the same photos are uploaded multi times. Metadata like thumbnails are broken in Moments for they need reindex.
 
 ## Features
-#### Simple UI to set up account info and running configuration
-#### Support filter photos by date/last count
-#### Sync photos to remote sftp server and trigger reindex process in Synology NAS
-#### Resume broken transfer during downloading photos
-#### Simple notification by slack channel or email
-#### Support schedule sync tasks using crontab expression
+- Simple UI to set up account info and running configuration
+- Support filter photos by date/last count
+- Sync photos to remote sftp server and trigger reindex process in Synology NAS
+- Resume broken transfer during downloading photos
+- Simple notification by slack channel or email
+- Support schedule sync tasks using crontab expression
 
 ## Installation
 ### Clone repository
