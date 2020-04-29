@@ -163,6 +163,7 @@ The web UI is crude and simple. It is better to set up an https reverse-proxy in
 Assume you have docker:
 ```bash
 docker run --name redis-antascope-local-test -d -p 6379:6379 redis
+pipenv install --dev
 make test
 ```
 Change redis port in *artascope/src/config/localtest.py* if needed.
