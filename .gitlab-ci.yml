@@ -1,4 +1,4 @@
-image: nas.magicqin.com:5555/magicqin/images/docker:19.03.3-compose
+image: nas.magicqin.net:5555/magicqin/images/docker:19.03.3-compose
 
 stages:
   - build
