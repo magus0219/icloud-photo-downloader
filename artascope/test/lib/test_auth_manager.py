@@ -63,6 +63,7 @@ class MockPyiCloudSession:
             filename=str(self.api._get_cookiejar_path())
         )
         self.cookies.load()
+        print(self.cookies)
 
 
 class MockPyiCloudService:
