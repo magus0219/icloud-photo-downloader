@@ -37,7 +37,7 @@ deploy_stage:
     - docker-compose -f deployment/docker-compose/docker-compose.yml up -d
   variables:
     ARTASCOPE_ENV: prod_docker_compose
-    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
+    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.net:5555/"
     ARTASCOPE_WEB_PORT: 31100
     ARTASCOPE_FLOWER_PORT: 31101
     TZ: "Asia/Shanghai"
@@ -48,14 +48,14 @@ deploy_stage:
     - master
 
 deploy_prod:
-  image: nas.magicqin.com:5555/magicqin/images/docker:19.03.3-kubectl
+  image: nas.magicqin.net:5555/magicqin/images/docker:19.03.3-kubectl
   stage: deploy
   script:
     - export KUBECONFIG=$KUBECONFIG
-    - export NEW_IMAGE=nas.magicqin.com:5555/magicqin/icloud-photo-downloader:$CI_COMMIT_SHA
+    - export NEW_IMAGE=nas.magicqin.net:5555/magicqin/icloud-photo-downloader:$CI_COMMIT_SHA
     - kubectl set image deployment artascope-app artascope-web=$NEW_IMAGE celery-worker-main=$NEW_IMAGE celery-worker-upload=$NEW_IMAGE celery-worker-msg=$NEW_IMAGE celery-flower=$NEW_IMAGE scheduler=$NEW_IMAGE --record -n artascope
   variables:
-    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.com:5555/"
+    ARTASCOPE_DOCKER_REGISTRY: "nas.magicqin.net:5555/"
     ARTASCOPE_ENV: prod_k8s
   environment:
     name: prod
@@ -70,8 +70,8 @@ release_to_docker_hub:
   script:
     - export VERSION=`cat .version`
     - echo release ${VERSION}
-    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:${VERSION}
-    - docker tag nas.magicqin.com:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
+    - docker tag nas.magicqin.net:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:${VERSION}
+    - docker tag nas.magicqin.net:5555/magicqin/icloud-photo-downloader:latest magicqin/icloud-photo-downloader:latest
     - docker push magicqin/icloud-photo-downloader:latest
     - docker push magicqin/icloud-photo-downloader:${VERSION}
   environment:
