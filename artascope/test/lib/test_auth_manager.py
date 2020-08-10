@@ -43,6 +43,7 @@ def prepare_cookie_file() -> None:
         f.write(
             '#LWP-Cookies-2.0\nSet-Cookie3: X-APPLE-WEBAUTH-HSA-TRUST-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BQ==BST_IAAAAAAABLwIAAAAAF6LMq8RDmdzLmljbG91ZC5hdXRovQAJWyxlyRSJGCebu2GAUY3NPYxl4HYHuluB7fhMgT55QNtwdbt5AN3MP1wkPIjva6lAHH7cEJ0fxhokwubjciFGeHijihK_b_tmigi9Q3UkWGE0ZzTu9NUhGTOrn9VB-VnY56i5DC6faNa3ebirFEtq1YJ6mg~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-07-05 13:46:23Z"; HttpOnly=None; version=0\nSet-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-06-05 13:45:10Z"; HttpOnly=None; version=0'
         )
+        print(f)
 
 
 COOKIE = namedtuple("Cookie", ["name", "path", "domain"])
@@ -96,6 +97,7 @@ class MockPyiCloudService:
         return True
 
     def _get_cookiejar_path(self):
+        print("get", TEMP_FILE_PATH)
         return TEMP_FILE_PATH
 
 
