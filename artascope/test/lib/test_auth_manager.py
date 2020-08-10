@@ -342,7 +342,7 @@ class TestAuthManager:
         am.clear_hsa_trust_cookie()
         assert (
             open(am._icloud_api._get_cookiejar_path(), "r").read()
-            == 'Set-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-06-05 13:45:10Z"; HttpOnly=None; version=0'
+            == 'Set-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2030-06-05 13:45:10Z"; HttpOnly=None; version=0'
         )
 
     def test_validate_captcha_fail(self, am, monkeypatch):
@@ -372,5 +372,5 @@ class TestAuthManager:
         assert am.get_login_status() == LoginStatus.NEED_LOGIN_AGAIN
         assert (
             open(TEMP_FILE_PATH, "r").read()
-            == 'Set-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2020-06-05 13:45:10Z"; HttpOnly=None; version=0'
+            == 'Set-Cookie3: X_APPLE_WEB_KB-K3YK2TVYKD-6HH1VSP3AQAD9K58=""v=1:t=BA==BST_IAAAAAAABLwIAAAAAF6LMmURDmdzLmljbG91ZC5hdXRovQBLuBmVRPdPJjDqhBhiaOO3DrLp_A5wYaaEoSNFeHwBBsEEWbE9_p-strpA8GErq5r8i85S6jnJSa03eql9tX7ez7c9HWCl08j07UPBkJHe_6iruJ6XciVw8WMe-s_tL6zgLzIiW7QgLeZ8g2O5jAPf-oQtnw~~""; path="/"; domain=".icloud.com"; path_spec; domain_dot; secure; expires="2030-06-05 13:45:10Z"; HttpOnly=None; version=0'
         )
