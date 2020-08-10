@@ -225,6 +225,7 @@ class AuthManager:
 
     def find_hsa_trust_cookie(self) -> bool:
         for one in self._icloud_api.session.cookies:
+            print(one)
             if one.name.startswith("X-APPLE-WEBAUTH-HSA-TRUST"):
                 return True
         return False
